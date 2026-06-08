@@ -1,0 +1,71 @@
+{
+  "name": "react-native-replayfy",
+  "version": "0.0.1",
+  "description": "Replayfy session replay + analytics connector for React Native",
+  "main": "lib/commonjs/index",
+  "module": "lib/module/index",
+  "types": "lib/typescript/src/index.d.ts",
+  "react-native": "src/index",
+  "source": "src/index",
+  "files": [
+    "src",
+    "lib",
+    "android",
+    "ios",
+    "*.podspec",
+    "!ios/build",
+    "!android/build",
+    "!android/gradle",
+    "!**/__tests__",
+    "!**/.*"
+  ],
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "prepare": "bob build",
+    "clean": "del-cli android/build ios/build lib"
+  },
+  "keywords": [
+    "react-native",
+    "ios",
+    "android",
+    "session-replay",
+    "analytics",
+    "replayfy"
+  ],
+  "license": "UNLICENSED",
+  "private": false,
+  "peerDependencies": {
+    "react": "*",
+    "react-native": "*"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.44",
+    "del-cli": "^5.1.0",
+    "react": "18.3.1",
+    "react-native": "0.76.0",
+    "react-native-builder-bob": "^0.20.0",
+    "typescript": "^5.2.2"
+  },
+  "codegenConfig": {
+    "name": "RNReplayNativeSpec",
+    "type": "modules",
+    "jsSrcsDir": "src",
+    "android": {
+      "javaPackageName": "com.replayfy.reactnative"
+    }
+  },
+  "react-native-builder-bob": {
+    "source": "src",
+    "output": "lib",
+    "targets": [
+      "commonjs",
+      "module",
+      [
+        "typescript",
+        {
+          "project": "tsconfig.build.json"
+        }
+      ]
+    ]
+  }
+}

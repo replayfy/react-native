@@ -1,0 +1,121 @@
+import Foundation
+import React
+import Replay
+#if canImport(UIKit)
+import UIKit
+#endif
+
+/// React Native bridge for Replayfy. Thin forwarder onto the native
+/// `Replay` SDK (which drives the live `ReplayCore` engine). JS-only
+/// signals (network / console / errors) arrive here pre-assembled; the
+/// engine handles screenshots, taps, performance, and crashes itself.
+@objc(ReplayNative)
+public final class ReplayNative: NSObject {
+
+  /// Injected by RN — needed to resolve React tags to native views.
+  @objc public var bridge: RCTBridge!
+
+  @objc public static func requiresMainQueueSetup() -> Bool { false }
+
+  @objc(boot:ingestUrl:configJson:)
+  public func boot(_ projectKey: String, ingestUrl: String, configJson: String) {
+    // configJson carries native knobs (recordScreen / fps / maskAllInputs);
+    // the live engine doesn't consume them yet, so they're accepted and
+    // ignored for now (parity with the native SDKs' current behaviour).
+    Replay.start(with: ReplayConfig(apiKey: projectKey, apiHost: ingestUrl))
+  }
+
+  @objc(identify:)
+  public func identify(_ distinctId: String) {
+    Replay.identify(distinctId, properties: nil)
+  }
+
+  @objc(setMetadata:value:)
+  public func setMetadata(_ key: String, value: String) {
+    ReplayBridge.recordMetadata(key, value: value)
+  }
+
+  @objc(track:propsJson:)
+  public func track(_ name: String, propsJson: String?) {
+    Replay.track(name, properties: Self.dict(from: propsJson))
+  }
+
+  @objc(screen:)
+  public func screen(_ name: String) {
+    Replay.tagScreenName(name)
+  }
+
+  @objc(recordNetwork:)
+  public func recordNetwork(_ recordJson: String) {
+    guard
+      let data = recordJson.data(using: .utf8),
+      let o = try? JSONSerialization.jsonObject(with: data) as? [String: Any]
+    else { return }
+    ReplayBridge.recordNetwork(
+      url: o["url"] as? String ?? "",
+      method: o["method"] as? String ?? "GET",
+      request: Self.json(o["request"]),
+      response: Self.json(o["response"]),
+      status: o["status"] as? Int ?? 0,
+      duration: o["durationMs"] as? Int ?? 0
+    )
+  }
+
+  @objc
+  public func shutdown() {
+    ReplayBridge.stopEngine()
+  }
+
+  @objc(sessionId:rejecter:)
+  public func sessionId(
+    _ resolve: @escaping RCTPromiseResolveBlock,
+    rejecter _: @escaping RCTPromiseRejectBlock
+  ) {
+    resolve(ReplayBridge.currentSessionId() ?? "")
+  }
+
+  @objc(maskNode:)
+  public func maskNode(_ reactTag: NSNumber) {
+    resolveView(reactTag) { Replay.addPrivacyView($0) }
+  }
+
+  @objc(unmaskNode:)
+  public func unmaskNode(_ reactTag: NSNumber) {
+    resolveView(reactTag) { Replay.removePrivacyView($0) }
+  }
+
+  // MARK: - Helpers
+
+  /// Resolve a React tag to its native view. `addUIBlock` asserts it runs
+  /// on the UI-manager queue, so hop there first (the bridge method is
+  /// invoked on the module's own queue). Legacy-arch path; Fabric
+  /// resolution is a follow-up.
+  private func resolveView(_ tag: NSNumber, _ apply: @escaping (UIView) -> Void) {
+    #if canImport(UIKit)
+    RCTExecuteOnUIManagerQueue { [weak self] in
+      self?.bridge?.uiManager.addUIBlock { _, viewRegistry in
+        if let view = viewRegistry?[tag] { apply(view) }
+      }
+    }
+    #endif
+  }
+
+  private static func dict(from json: String?) -> [String: Any]? {
+    guard
+      let json,
+      let data = json.data(using: .utf8),
+      let obj = try? JSONSerialization.jsonObject(with: data) as? [String: Any]
+    else { return nil }
+    return obj
+  }
+
+  private static func json(_ value: Any?) -> String {
+    guard
+      let value,
+      JSONSerialization.isValidJSONObject(value),
+      let data = try? JSONSerialization.data(withJSONObject: value),
+      let str = String(data: data, encoding: .utf8)
+    else { return "{}" }
+    return str
+  }
+}
