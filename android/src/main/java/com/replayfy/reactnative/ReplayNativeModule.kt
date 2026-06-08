@@ -24,9 +24,22 @@ class ReplayNativeModule(private val reactContext: ReactApplicationContext) :
   @ReactMethod
   fun boot(projectKey: String, ingestUrl: String, configJson: String) {
     val app = reactContext.applicationContext as? Application ?: return
-    // configJson knobs aren't consumed by the live engine yet (parity
-    // with the native SDKs' current behaviour); accepted + ignored.
-    Replay.init(app, ReplayConfig(apiKey = projectKey, apiHost = ingestUrl))
+    // Tag the session as React-Native-captured (dashboard shows "Captured by
+    // …"; platform stays android). Must precede init() — read in /start.
+    Replay.setFramework("react-native")
+
+    // Native knobs from the JS config. recordScreen gates the frame archive;
+    // maskAllInputs auto-occludes text fields. fps is server-authoritative
+    // (set from the /start response), so it isn't forwarded here.
+    val cfg = try { JSONObject(configJson) } catch (e: Exception) { JSONObject() }
+    val recordScreen = cfg.optBoolean("recordScreen", true)
+    Replay.init(
+      app,
+      ReplayConfig(apiKey = projectKey, apiHost = ingestUrl, captureSnapshotPixels = recordScreen),
+    )
+    if (cfg.optBoolean("maskAllInputs", false)) {
+      Replay.occludeAllTextFields(true)
+    }
   }
 
   @ReactMethod

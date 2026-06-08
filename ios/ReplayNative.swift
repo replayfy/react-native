@@ -19,10 +19,23 @@ public final class ReplayNative: NSObject {
 
   @objc(boot:ingestUrl:configJson:)
   public func boot(_ projectKey: String, ingestUrl: String, configJson: String) {
-    // configJson carries native knobs (recordScreen / fps / maskAllInputs);
-    // the live engine doesn't consume them yet, so they're accepted and
-    // ignored for now (parity with the native SDKs' current behaviour).
-    Replay.start(with: ReplayConfig(apiKey: projectKey, apiHost: ingestUrl))
+    // Tag the session as React-Native-captured (dashboard shows "Captured by
+    // …"; platform stays ios). Must precede start() — it's read in /start.
+    ReplayBridge.setFramework("react-native")
+
+    // Native knobs from the JS config. recordScreen gates the frame archive;
+    // maskAllInputs auto-occludes text fields. fps is server-authoritative
+    // (set from the /start response), so it isn't forwarded here.
+    let cfg = Self.dict(from: configJson) ?? [:]
+    let recordScreen = (cfg["recordScreen"] as? Bool) ?? true
+    Replay.start(with: ReplayConfig(
+      apiKey: projectKey,
+      apiHost: ingestUrl,
+      captureSnapshotPixels: recordScreen
+    ))
+    if (cfg["maskAllInputs"] as? Bool) == true {
+      ReplayBridge.occludeAllTextFields(true)
+    }
   }
 
   @objc(identify:)
