@@ -5,7 +5,6 @@ import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContextBaseJavaModule
 import com.facebook.react.bridge.ReactMethod
-import com.facebook.react.uimanager.UIManagerModule
 import com.replayfy.android.Replay
 import com.replayfy.android.ReplayConfig
 import org.json.JSONObject
@@ -87,32 +86,6 @@ class ReplayNativeModule(private val reactContext: ReactApplicationContext) :
   @ReactMethod
   fun sessionId(promise: Promise) {
     promise.resolve(Replay.currentSessionId() ?: "")
-  }
-
-  @ReactMethod
-  fun maskNode(reactTag: Double) {
-    resolveAndMask(reactTag.toInt(), mask = true)
-  }
-
-  @ReactMethod
-  fun unmaskNode(reactTag: Double) {
-    resolveAndMask(reactTag.toInt(), mask = false)
-  }
-
-  /** Resolve a React tag to its native view on the UI thread, then
-   *  hand it to the SDK's privacy registry. (Legacy-arch path; Fabric
-   *  resolution is a follow-up.) */
-  private fun resolveAndMask(tag: Int, mask: Boolean) {
-    val uiManager =
-      reactContext.getNativeModule(UIManagerModule::class.java) ?: return
-    uiManager.addUIBlock { nvhm ->
-      val view = try {
-        nvhm.resolveView(tag)
-      } catch (_: Throwable) {
-        null
-      } ?: return@addUIBlock
-      if (mask) Replay.addPrivacyView(view) else Replay.removePrivacyView(view)
-    }
   }
 
   private fun parseProps(json: String?): Map<String, Any?>? {

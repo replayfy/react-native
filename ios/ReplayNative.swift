@@ -12,9 +12,6 @@ import UIKit
 @objc(ReplayNative)
 public final class ReplayNative: NSObject {
 
-  /// Injected by RN — needed to resolve React tags to native views.
-  @objc public var bridge: RCTBridge!
-
   @objc public static func requiresMainQueueSetup() -> Bool { false }
 
   @objc(boot:ingestUrl:configJson:)
@@ -87,31 +84,7 @@ public final class ReplayNative: NSObject {
     resolve(ReplayBridge.currentSessionId() ?? "")
   }
 
-  @objc(maskNode:)
-  public func maskNode(_ reactTag: NSNumber) {
-    resolveView(reactTag) { Replay.addPrivacyView($0) }
-  }
-
-  @objc(unmaskNode:)
-  public func unmaskNode(_ reactTag: NSNumber) {
-    resolveView(reactTag) { Replay.removePrivacyView($0) }
-  }
-
   // MARK: - Helpers
-
-  /// Resolve a React tag to its native view. `addUIBlock` asserts it runs
-  /// on the UI-manager queue, so hop there first (the bridge method is
-  /// invoked on the module's own queue). Legacy-arch path; Fabric
-  /// resolution is a follow-up.
-  private func resolveView(_ tag: NSNumber, _ apply: @escaping (UIView) -> Void) {
-    #if canImport(UIKit)
-    RCTExecuteOnUIManagerQueue { [weak self] in
-      self?.bridge?.uiManager.addUIBlock { _, viewRegistry in
-        if let view = viewRegistry?[tag] { apply(view) }
-      }
-    }
-    #endif
-  }
 
   private static func dict(from json: String?) -> [String: Any]? {
     guard

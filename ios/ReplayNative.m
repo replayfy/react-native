@@ -23,8 +23,4 @@ RCT_EXTERN_METHOD(shutdown)
 RCT_EXTERN_METHOD(sessionId:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 
-RCT_EXTERN_METHOD(maskNode:(nonnull NSNumber *)reactTag)
-
-RCT_EXTERN_METHOD(unmaskNode:(nonnull NSNumber *)reactTag)
-
 @end

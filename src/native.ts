@@ -24,10 +24,6 @@ export interface ReplayNativeModule {
   screen(name: string): void;
   /** Forward one captured network call as a JSON `NetworkRecord`. */
   recordNetwork(recordJson: string): void;
-  /** Mask the native view backing a React node tag. */
-  maskNode(reactTag: number): void;
-  /** Remove a previously-applied node mask. */
-  unmaskNode(reactTag: number): void;
 }
 
 const MODULE_NAME = 'ReplayNative';
