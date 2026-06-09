@@ -1,3 +1,18 @@
+/**
+ * How a masked (privacy-sensitive) region is rendered in the recording.
+ * Mirrors the native engines' `ReplayMaskStyle` — the index must match
+ * (blur = 0, overlay = 1, pixelate = 2).
+ *
+ *  - `Blur`     — the underlying pixels are blurred.
+ *  - `Overlay`  — a solid box is painted over the region (no pixel survives).
+ *  - `Pixelate` — the region is reduced to coarse mosaic blocks.
+ */
+export enum ReplayMaskStyle {
+  Blur = 0,
+  Overlay = 1,
+  Pixelate = 2,
+}
+
 /** Options for the JS-side network observer. */
 export interface NetworkCaptureOptions {
   /** Capture request/response bodies (off by default — PII risk). */

@@ -1,4 +1,5 @@
 import type { NetworkRecord, ReplayConfig } from './types';
+import { ReplayMaskStyle } from './types';
 import { getNative, nativeAvailable } from './native';
 import {
   installNetworkCapture,
@@ -96,6 +97,16 @@ export class ReplayClient {
   /** Set the current screen name (also driven by the nav integration). */
   screen(name: string): void {
     getNative()?.screen(name);
+  }
+
+  /**
+   * Set the global mask render style — {@link ReplayMaskStyle.Blur} (default)
+   * or {@link ReplayMaskStyle.Overlay} (a solid box). Applies to every
+   * `<ReplayMask>`, bulk-occluded text, and whole-screen occlusion. Call any
+   * time after {@link start}.
+   */
+  setMaskStyle(style: ReplayMaskStyle): void {
+    getNative()?.setMaskStyle(style);
   }
 
   /** Resolve the active session id, or null when not recording. */
