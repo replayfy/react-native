@@ -23,6 +23,7 @@ export type { ReplayProviderProps } from './provider';
 export { ReplayMask } from './privacy/mask';
 export { trackScreens } from './nav/navigation';
 export { nativeAvailable } from './native';
+export { ReplayMaskStyle } from './types';
 export type {
   ReplayConfig,
   NetworkCaptureOptions,

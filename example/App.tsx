@@ -54,6 +54,34 @@ export default function App() {
         <View style={{ marginBottom: 12 }}>
           <Button title="log to console" onPress={() => console.log('hello from RN demo')} />
         </View>
+        <View style={{ marginBottom: 12 }}>
+          <Button
+            title="throw handled JS error"
+            // Caught by the React error boundary / dev red-box, but our
+            // ErrorUtils chain still forwards it as a $exception (fatal:false).
+            onPress={() => {
+              try {
+                throw new Error('demo: handled JS error');
+              } catch (e) {
+                // Surface to the global handler without killing the app.
+                (globalThis as { ErrorUtils?: { reportError?: (e: unknown) => void } })
+                  .ErrorUtils?.reportError?.(e);
+              }
+            }}
+          />
+        </View>
+        <View style={{ marginBottom: 12 }}>
+          <Button
+            title="throw fatal JS error"
+            // Uncaught async throw → RN global handler with isFatal=true →
+            // forwarded as a $exception (fatal:true).
+            onPress={() => {
+              setTimeout(() => {
+                throw new Error('demo: fatal JS error');
+              }, 0);
+            }}
+          />
+        </View>
 
         <ReplayMask>
           <View

@@ -55,6 +55,13 @@ public final class ReplayNative: NSObject {
     Replay.tagScreenName(name)
   }
 
+  @objc(setMaskStyle:)
+  public func setMaskStyle(_ style: Int) {
+    // Global default style (blur = 0, overlay = 1) — JS sends the raw index,
+    // we rebuild the Swift enum the engine consumes.
+    Replay.setMaskStyle(ReplayMaskStyle(rawValue: style) ?? .blur)
+  }
+
   @objc(recordNetwork:)
   public func recordNetwork(_ recordJson: String) {
     guard

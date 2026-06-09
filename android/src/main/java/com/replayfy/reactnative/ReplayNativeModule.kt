@@ -62,6 +62,12 @@ class ReplayNativeModule(private val reactContext: ReactApplicationContext) :
   }
 
   @ReactMethod
+  fun setMaskStyle(style: Int) {
+    // Global default style (blur = 0, overlay = 1) — JS sends the raw index.
+    Replay.setMaskStyle(com.replayfy.android.ReplayMaskStyle.from(style))
+  }
+
+  @ReactMethod
   fun recordNetwork(recordJson: String) {
     val o = try {
       JSONObject(recordJson)

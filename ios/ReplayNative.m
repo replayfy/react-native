@@ -16,6 +16,8 @@ RCT_EXTERN_METHOD(track:(NSString *)name propsJson:(NSString *)propsJson)
 
 RCT_EXTERN_METHOD(screen:(NSString *)name)
 
+RCT_EXTERN_METHOD(setMaskStyle:(NSInteger)style)
+
 RCT_EXTERN_METHOD(recordNetwork:(NSString *)recordJson)
 
 RCT_EXTERN_METHOD(shutdown)
