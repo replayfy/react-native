@@ -25,4 +25,44 @@ RCT_EXTERN_METHOD(shutdown)
 RCT_EXTERN_METHOD(sessionId:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 
+// ── Lifecycle ──
+RCT_EXTERN_METHOD(startNewSession)
+RCT_EXTERN_METHOD(pauseRecording)
+RCT_EXTERN_METHOD(resumeRecording)
+RCT_EXTERN_METHOD(cancelSession)
+RCT_EXTERN_METHOD(stopApplicationAndUploadData)
+RCT_EXTERN_METHOD(isRecording:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+
+// ── Identity / events ──
+RCT_EXTERN_METHOD(setUserProperty:(NSString *)key value:(NSString *)value)
+RCT_EXTERN_METHOD(setSessionProperty:(NSString *)key value:(NSString *)value)
+RCT_EXTERN_METHOD(addTagWithProperties:(NSString *)name propsJson:(NSString *)propsJson)
+RCT_EXTERN_METHOD(reportBugEvent:(NSString *)name description:(NSString *)description)
+
+// ── Screens ──
+RCT_EXTERN_METHOD(setAutomaticScreenNameTagging:(BOOL)enabled)
+
+// ── Privacy ──
+RCT_EXTERN_METHOD(occludeAllTextFields:(BOOL)occlude)
+RCT_EXTERN_METHOD(occludeAllTextView:(BOOL)occlude)
+RCT_EXTERN_METHOD(occludeSensitiveScreen:(BOOL)occlude)
+
+// ── GDPR ──
+RCT_EXTERN_METHOD(optOut:(BOOL)optedOut)
+RCT_EXTERN_METHOD(isOptedOut:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+
+// ── Session extras ──
+RCT_EXTERN_METHOD(markSessionAsFavorite)
+RCT_EXTERN_METHOD(setPushNotificationToken:(NSString *)token)
+RCT_EXTERN_METHOD(setAppVersion:(NSString *)version build:(NSString *)build)
+RCT_EXTERN_METHOD(setMultiSessionRecord:(BOOL)enabled)
+
+// ── Deep links ──
+RCT_EXTERN_METHOD(urlForCurrentSession:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+RCT_EXTERN_METHOD(urlForCurrentUser:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+
 @end

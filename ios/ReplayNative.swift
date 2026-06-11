@@ -91,6 +91,90 @@ public final class ReplayNative: NSObject {
     resolve(ReplayBridge.currentSessionId() ?? "")
   }
 
+  // MARK: - Lifecycle
+
+  @objc public func startNewSession() { Replay.startNewSession() }
+  @objc public func pauseRecording() { Replay.pauseRecording() }
+  @objc public func resumeRecording() { Replay.resumeRecording() }
+  @objc public func cancelSession() { Replay.cancelSession() }
+  @objc public func stopApplicationAndUploadData() { Replay.stopApplicationAndUploadData() }
+
+  @objc(isRecording:rejecter:)
+  public func isRecording(_ resolve: @escaping RCTPromiseResolveBlock, rejecter _: @escaping RCTPromiseRejectBlock) {
+    resolve(Replay.isRecording)
+  }
+
+  // MARK: - Identity / events
+
+  @objc(setUserProperty:value:)
+  public func setUserProperty(_ key: String, value: String) { Replay.setUserProperty(key, value: value) }
+
+  @objc(setSessionProperty:value:)
+  public func setSessionProperty(_ key: String, value: String) { Replay.setSessionProperty(key, value: value) }
+
+  @objc(addTagWithProperties:propsJson:)
+  public func addTagWithProperties(_ name: String, propsJson: String?) {
+    Replay.addTagWithProperties(name, properties: Self.dict(from: propsJson))
+  }
+
+  @objc(reportBugEvent:description:)
+  public func reportBugEvent(_ name: String, description: String) {
+    Replay.reportBugEvent(name, description: description)
+  }
+
+  // MARK: - Screens
+
+  @objc(setAutomaticScreenNameTagging:)
+  public func setAutomaticScreenNameTagging(_ enabled: Bool) { Replay.setAutomaticScreenNameTagging(enabled) }
+
+  // MARK: - Privacy
+
+  @objc(occludeAllTextFields:)
+  public func occludeAllTextFields(_ occlude: Bool) { Replay.occludeAllTextFields(occlude) }
+
+  @objc(occludeAllTextView:)
+  public func occludeAllTextView(_ occlude: Bool) { Replay.occludeAllTextView(occlude) }
+
+  @objc(occludeSensitiveScreen:)
+  public func occludeSensitiveScreen(_ occlude: Bool) { Replay.occludeSensitiveScreen(occlude) }
+
+  // MARK: - GDPR
+
+  @objc(optOut:)
+  public func optOut(_ optedOut: Bool) { Replay.optOutOverall(optedOut) }
+
+  @objc(isOptedOut:rejecter:)
+  public func isOptedOut(_ resolve: @escaping RCTPromiseResolveBlock, rejecter _: @escaping RCTPromiseRejectBlock) {
+    resolve(Replay.isOptedOutOverall)
+  }
+
+  // MARK: - Session extras
+
+  @objc public func markSessionAsFavorite() { Replay.markSessionAsFavorite() }
+
+  @objc(setPushNotificationToken:)
+  public func setPushNotificationToken(_ token: String) { Replay.setPushNotificationToken(token) }
+
+  @objc(setAppVersion:build:)
+  public func setAppVersion(_ version: String, build: String) {
+    Replay.setAppVersion(version, build: build.isEmpty ? nil : build)
+  }
+
+  @objc(setMultiSessionRecord:)
+  public func setMultiSessionRecord(_ enabled: Bool) { Replay.setMultiSessionRecord(enabled) }
+
+  // MARK: - Deep links
+
+  @objc(urlForCurrentSession:rejecter:)
+  public func urlForCurrentSession(_ resolve: @escaping RCTPromiseResolveBlock, rejecter _: @escaping RCTPromiseRejectBlock) {
+    resolve((Replay.urlForCurrentSession() as String?) ?? "")
+  }
+
+  @objc(urlForCurrentUser:rejecter:)
+  public func urlForCurrentUser(_ resolve: @escaping RCTPromiseResolveBlock, rejecter _: @escaping RCTPromiseRejectBlock) {
+    resolve((Replay.urlForCurrentUser() as String?) ?? "")
+  }
+
   // MARK: - Helpers
 
   private static func dict(from json: String?) -> [String: Any]? {

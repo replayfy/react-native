@@ -26,6 +26,42 @@ export interface ReplayNativeModule {
   recordNetwork(recordJson: string): void;
   /** Set the global mask render style (blur = 0, overlay = 1). */
   setMaskStyle(style: number): void;
+
+  // ── Lifecycle ────────────────────────────────────────────────────
+  startNewSession(): void;
+  pauseRecording(): void;
+  resumeRecording(): void;
+  cancelSession(): void;
+  stopApplicationAndUploadData(): void;
+  isRecording(): Promise<boolean>;
+
+  // ── Identity / events ────────────────────────────────────────────
+  setUserProperty(key: string, value: string): void;
+  setSessionProperty(key: string, value: string): void;
+  addTagWithProperties(name: string, propsJson: string | null): void;
+  reportBugEvent(name: string, description: string): void;
+
+  // ── Screens ──────────────────────────────────────────────────────
+  setAutomaticScreenNameTagging(enabled: boolean): void;
+
+  // ── Privacy ──────────────────────────────────────────────────────
+  occludeAllTextFields(occlude: boolean): void;
+  occludeAllTextView(occlude: boolean): void;
+  occludeSensitiveScreen(occlude: boolean): void;
+
+  // ── GDPR ─────────────────────────────────────────────────────────
+  optOut(optedOut: boolean): void;
+  isOptedOut(): Promise<boolean>;
+
+  // ── Session extras ───────────────────────────────────────────────
+  markSessionAsFavorite(): void;
+  setPushNotificationToken(token: string): void;
+  setAppVersion(version: string, build: string): void;
+  setMultiSessionRecord(enabled: boolean): void;
+
+  // ── Deep links ───────────────────────────────────────────────────
+  urlForCurrentSession(): Promise<string>;
+  urlForCurrentUser(): Promise<string>;
 }
 
 const MODULE_NAME = 'ReplayNative';

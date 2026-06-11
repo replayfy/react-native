@@ -94,6 +94,42 @@ class ReplayNativeModule(private val reactContext: ReactApplicationContext) :
     promise.resolve(Replay.currentSessionId() ?: "")
   }
 
+  // ── Lifecycle ──
+  @ReactMethod fun startNewSession() { Replay.startNewSession() }
+  @ReactMethod fun pauseRecording() { Replay.pauseRecording() }
+  @ReactMethod fun resumeRecording() { Replay.resumeRecording() }
+  @ReactMethod fun cancelSession() { Replay.cancelSession() }
+  @ReactMethod fun stopApplicationAndUploadData() { Replay.stopApplicationAndUploadData() }
+  @ReactMethod fun isRecording(promise: Promise) { promise.resolve(Replay.isRecording()) }
+
+  // ── Identity / events ──
+  @ReactMethod fun setUserProperty(key: String, value: String) { Replay.setUserProperty(key, value) }
+  @ReactMethod fun setSessionProperty(key: String, value: String) { Replay.setSessionProperty(key, value) }
+  @ReactMethod fun addTagWithProperties(name: String, propsJson: String?) { Replay.addTagWithProperties(name, parseProps(propsJson)) }
+  @ReactMethod fun reportBugEvent(name: String, description: String) { Replay.reportBugEvent(name, description) }
+
+  // ── Screens ──
+  @ReactMethod fun setAutomaticScreenNameTagging(enabled: Boolean) { Replay.setAutomaticScreenNameTagging(enabled) }
+
+  // ── Privacy ──
+  @ReactMethod fun occludeAllTextFields(occlude: Boolean) { Replay.occludeAllTextFields(occlude) }
+  @ReactMethod fun occludeAllTextView(occlude: Boolean) { Replay.occludeAllTextView(occlude) }
+  @ReactMethod fun occludeSensitiveScreen(occlude: Boolean) { Replay.occludeSensitiveScreen(occlude) }
+
+  // ── GDPR ──
+  @ReactMethod fun optOut(optedOut: Boolean) { Replay.optOutOverall(optedOut) }
+  @ReactMethod fun isOptedOut(promise: Promise) { promise.resolve(Replay.isOptedOutOverall()) }
+
+  // ── Session extras ──
+  @ReactMethod fun markSessionAsFavorite() { Replay.markSessionAsFavorite() }
+  @ReactMethod fun setPushNotificationToken(token: String) { Replay.setPushNotificationToken(token) }
+  @ReactMethod fun setAppVersion(version: String, build: String) { Replay.setAppVersion(version, build.ifEmpty { null }) }
+  @ReactMethod fun setMultiSessionRecord(enabled: Boolean) { Replay.setMultiSessionRecord(enabled) }
+
+  // ── Deep links ──
+  @ReactMethod fun urlForCurrentSession(promise: Promise) { promise.resolve(Replay.urlForCurrentSession() ?: "") }
+  @ReactMethod fun urlForCurrentUser(promise: Promise) { promise.resolve(Replay.urlForCurrentUser() ?: "") }
+
   private fun parseProps(json: String?): Map<String, Any?>? {
     if (json.isNullOrBlank()) return null
     return try {

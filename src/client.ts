@@ -127,6 +127,78 @@ export class ReplayClient {
     this.started = false;
   }
 
+  // ── Lifecycle ──────────────────────────────────────────────────
+  /** Start a fresh session, ending the current one. */
+  startNewSession(): void { getNative()?.startNewSession(); }
+  /** Pause recording (keeps the session). */
+  pauseRecording(): void { getNative()?.pauseRecording(); }
+  /** Resume after {@link pauseRecording}. */
+  resumeRecording(): void { getNative()?.resumeRecording(); }
+  /** Discard the current session without uploading. */
+  cancelSession(): void { getNative()?.cancelSession(); }
+  /** Flush the current session immediately (e.g. before a logout). */
+  stopApplicationAndUploadData(): void { getNative()?.stopApplicationAndUploadData(); }
+  /** Whether a session is currently recording. */
+  isRecording(): Promise<boolean> {
+    return getNative()?.isRecording() ?? Promise.resolve(false);
+  }
+
+  // ── Identity / events ──────────────────────────────────────────
+  /** Set a sticky user-level property. */
+  setUserProperty(key: string, value: string): void { getNative()?.setUserProperty(key, value); }
+  /** Set a session-scoped property. */
+  setSessionProperty(key: string, value: string): void { getNative()?.setSessionProperty(key, value); }
+  /** Tag the session with a named event + properties. */
+  addTagWithProperties(name: string, props?: Record<string, unknown>): void {
+    getNative()?.addTagWithProperties(name, props ? JSON.stringify(props) : null);
+  }
+  /** Report a manual bug event. */
+  reportBugEvent(name: string, description = ''): void {
+    getNative()?.reportBugEvent(name, description);
+  }
+
+  // ── Screens ────────────────────────────────────────────────────
+  /** Toggle automatic screen-name tagging. */
+  setAutomaticScreenNameTagging(enabled: boolean): void {
+    getNative()?.setAutomaticScreenNameTagging(enabled);
+  }
+
+  // ── Privacy ────────────────────────────────────────────────────
+  /** Occlude all text fields in screenshots. */
+  occludeAllTextFields(occlude: boolean): void { getNative()?.occludeAllTextFields(occlude); }
+  /** Occlude all multi-line text views in screenshots. */
+  occludeAllTextView(occlude: boolean): void { getNative()?.occludeAllTextView(occlude); }
+  /** Occlude the entire screen (e.g. a sensitive flow). */
+  occludeSensitiveScreen(occlude: boolean): void { getNative()?.occludeSensitiveScreen(occlude); }
+
+  // ── GDPR ───────────────────────────────────────────────────────
+  /** Opt the user out of all recording. */
+  optOut(optedOut: boolean): void { getNative()?.optOut(optedOut); }
+  /** Whether the user is opted out. */
+  isOptedOut(): Promise<boolean> {
+    return getNative()?.isOptedOut() ?? Promise.resolve(false);
+  }
+
+  // ── Session extras ─────────────────────────────────────────────
+  /** Flag the current session as a favorite. */
+  markSessionAsFavorite(): void { getNative()?.markSessionAsFavorite(); }
+  /** Associate a push token with the session/user. */
+  setPushNotificationToken(token: string): void { getNative()?.setPushNotificationToken(token); }
+  /** Set the host app version + build (keys crash symbol lookups). */
+  setAppVersion(version: string, build = ''): void { getNative()?.setAppVersion(version, build); }
+  /** Record multiple sessions per app launch instead of one. */
+  setMultiSessionRecord(enabled: boolean): void { getNative()?.setMultiSessionRecord(enabled); }
+
+  // ── Deep links ─────────────────────────────────────────────────
+  /** Shareable URL of the current session (empty when none). */
+  urlForCurrentSession(): Promise<string> {
+    return getNative()?.urlForCurrentSession() ?? Promise.resolve('');
+  }
+  /** Dashboard URL for the current user (empty when none). */
+  urlForCurrentUser(): Promise<string> {
+    return getNative()?.urlForCurrentUser() ?? Promise.resolve('');
+  }
+
   /** Whether the native module is linked. */
   get isAvailable(): boolean {
     return nativeAvailable();
