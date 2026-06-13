@@ -125,6 +125,7 @@ class ReplayNativeModule(private val reactContext: ReactApplicationContext) :
   @ReactMethod fun setPushNotificationToken(token: String) { Replay.setPushNotificationToken(token) }
   @ReactMethod fun setAppVersion(version: String, build: String) { Replay.setAppVersion(version, build.ifEmpty { null }) }
   @ReactMethod fun setMultiSessionRecord(enabled: Boolean) { Replay.setMultiSessionRecord(enabled) }
+  @ReactMethod fun allowShortBreakForAnotherApp(allow: Boolean) { Replay.allowShortBreakForAnotherApp(allow) }
 
   // ── Deep links ──
   @ReactMethod fun urlForCurrentSession(promise: Promise) { promise.resolve(Replay.urlForCurrentSession() ?: "") }

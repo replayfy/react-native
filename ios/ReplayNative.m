@@ -58,6 +58,7 @@ RCT_EXTERN_METHOD(markSessionAsFavorite)
 RCT_EXTERN_METHOD(setPushNotificationToken:(NSString *)token)
 RCT_EXTERN_METHOD(setAppVersion:(NSString *)version build:(NSString *)build)
 RCT_EXTERN_METHOD(setMultiSessionRecord:(BOOL)enabled)
+RCT_EXTERN_METHOD(allowShortBreakForAnotherApp:(BOOL)allow)
 
 // ── Deep links ──
 RCT_EXTERN_METHOD(urlForCurrentSession:(RCTPromiseResolveBlock)resolve

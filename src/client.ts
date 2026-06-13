@@ -188,6 +188,13 @@ export class ReplayClient {
   setAppVersion(version: string, build = ''): void { getNative()?.setAppVersion(version, build); }
   /** Record multiple sessions per app launch instead of one. */
   setMultiSessionRecord(enabled: boolean): void { getNative()?.setMultiSessionRecord(enabled); }
+  /** Allow a brief switch to another app without ending the session. */
+  allowShortBreakForAnotherApp(allow: boolean): void { getNative()?.allowShortBreakForAnotherApp(allow); }
+  /** Bridge a customer log line into the `$console` event stream (same path
+   *  the JS console capture uses — no separate native call needed). */
+  log(message: string, level = 'log'): void {
+    getNative()?.track('$console', JSON.stringify({ level, message }));
+  }
 
   // ── Deep links ─────────────────────────────────────────────────
   /** Shareable URL of the current session (empty when none). */

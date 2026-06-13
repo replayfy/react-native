@@ -163,6 +163,9 @@ public final class ReplayNative: NSObject {
   @objc(setMultiSessionRecord:)
   public func setMultiSessionRecord(_ enabled: Bool) { Replay.setMultiSessionRecord(enabled) }
 
+  @objc(allowShortBreakForAnotherApp:)
+  public func allowShortBreakForAnotherApp(_ allow: Bool) { Replay.allowShortBreakForAnotherApp(allow) }
+
   // MARK: - Deep links
 
   @objc(urlForCurrentSession:rejecter:)

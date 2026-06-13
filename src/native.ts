@@ -58,6 +58,7 @@ export interface ReplayNativeModule {
   setPushNotificationToken(token: string): void;
   setAppVersion(version: string, build: string): void;
   setMultiSessionRecord(enabled: boolean): void;
+  allowShortBreakForAnotherApp(allow: boolean): void;
 
   // ── Deep links ───────────────────────────────────────────────────
   urlForCurrentSession(): Promise<string>;
