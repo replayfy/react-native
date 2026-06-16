@@ -20,6 +20,8 @@ RCT_EXTERN_METHOD(setMaskStyle:(NSInteger)style)
 
 RCT_EXTERN_METHOD(recordNetwork:(NSString *)recordJson)
 
+RCT_EXTERN_METHOD(input:(NSString *)value masked:(BOOL)masked label:(NSString *)label)
+
 RCT_EXTERN_METHOD(shutdown)
 
 RCT_EXTERN_METHOD(sessionId:(RCTPromiseResolveBlock)resolve

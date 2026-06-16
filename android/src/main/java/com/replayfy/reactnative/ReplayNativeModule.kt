@@ -57,6 +57,11 @@ class ReplayNativeModule(private val reactContext: ReactApplicationContext) :
   }
 
   @ReactMethod
+  fun input(value: String, masked: Boolean, label: String) {
+    Replay.trackInput(label, value, masked)
+  }
+
+  @ReactMethod
   fun screen(name: String) {
     Replay.tagScreenName(name)
   }

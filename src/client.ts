@@ -94,6 +94,17 @@ export class ReplayClient {
     getNative()?.track(name, props ? JSON.stringify(props) : null);
   }
 
+  /**
+   * Record a text input's value on the session timeline. Call from a
+   * `TextInput`'s `onEndEditing` (RN manages its own text widgets, so there's
+   * no native field for the engine to auto-observe). Pass `masked: true` for
+   * sensitive fields — the value is dropped (recorded as `"***"`) and never
+   * leaves the device; the field is also blurred in playback.
+   */
+  trackInput(label: string, value: string, masked = false): void {
+    getNative()?.input(value, masked, label);
+  }
+
   /** Set the current screen name (also driven by the nav integration). */
   screen(name: string): void {
     getNative()?.screen(name);

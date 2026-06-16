@@ -50,6 +50,11 @@ public final class ReplayNative: NSObject {
     Replay.track(name, properties: Self.dict(from: propsJson))
   }
 
+  @objc(input:masked:label:)
+  public func input(_ value: String, masked: Bool, label: String) {
+    Replay.trackInput(label: label, value: value, masked: masked)
+  }
+
   @objc(screen:)
   public func screen(_ name: String) {
     Replay.tagScreenName(name)

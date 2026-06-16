@@ -24,6 +24,8 @@ export interface ReplayNativeModule {
   screen(name: string): void;
   /** Forward one captured network call as a JSON `NetworkRecord`. */
   recordNetwork(recordJson: string): void;
+  /** Record a text input's value (`masked` → value dropped to `"***"`). */
+  input(value: string, masked: boolean, label: string): void;
   /** Set the global mask render style (blur = 0, overlay = 1). */
   setMaskStyle(style: number): void;
 
