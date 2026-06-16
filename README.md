@@ -68,6 +68,41 @@ const navRef = useNavigationContainerRef();
 />;
 ```
 
+## Text input tracking
+
+Secure inputs auto-mask. To also record *what* a user types (funnel
+debugging), call `trackInput` from a `TextInput`'s `onEndEditing` — pass
+`masked: true` for sensitive fields (the value is dropped to `"***"` and
+never leaves the device):
+
+```tsx
+<TextInput placeholder="Email"
+  onEndEditing={(e) => Replay.trackInput('Email', e.nativeEvent.text)} />
+<TextInput secureTextEntry
+  onEndEditing={(e) => Replay.trackInput('Password', e.nativeEvent.text, true)} />
+```
+
+## Methods
+
+| Method | Purpose |
+|---|---|
+| `start(config)` | Boot + start recording |
+| `identify(distinctId, traits?)` | Attach a known user |
+| `track(name, props?)` | Custom timeline / funnel event |
+| `trackInput(label, value, masked?)` | Record a text input's value (masked → `"***"`) |
+| `screen(name)` | Set the current screen name |
+| `setMetadata` / `setUserProperty` / `setSessionProperty` | Sticky key/values |
+| `addTagWithProperties(name, props?)` | Tag the session |
+| `getSessionId()` → `Promise` | Resolve the active session id |
+| `setMaskStyle(style)` | Global mask style (`ReplayMaskStyle.Blur` / `Overlay` / `Pixelate`) |
+| `pauseRecording` / `resumeRecording` / `stop` / `startNewSession` / `cancelSession` | Lifecycle |
+| `optOut(bool)` / `isOptedOut()` | GDPR opt-out |
+| `urlForCurrentSession()` / `urlForCurrentUser()` | Session / user deep links |
+| `<ReplayMask>` | Mask sensitive content (wrap any element) |
+
+Native screenshots, taps, gestures, screen navigation, device info
+(incl. network type), performance, and crashes are captured automatically.
+
 ## `Replay.start(config)` options
 
 | Option | Type | Default | Description |
@@ -87,8 +122,10 @@ const navRef = useNavigationContainerRef();
 
 ## Status
 
-JS layer complete and type-checked. Native modules (iOS/Android bridges)
-and the example app are in progress — see the repo's task tracker.
+JS layer + native bridges (iOS / Android) are functional and type-checked.
+Network, console, errors, masking, text-input, and screen tracking are
+wired end-to-end. `ReplayMask` renders under both the New (Fabric) and old
+architectures.
 
 ## License
 
