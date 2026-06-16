@@ -50,6 +50,19 @@ android {
     targetSdkVersion getExtOrIntegerDefault("targetSdkVersion")
   }
 
+  sourceSets {
+    main {
+      // The Fabric ViewManager (src/newarch) implements codegen-generated
+      // classes that only exist on the New Architecture; the Paper variant
+      // (src/oldarch) is plain. Pick the matching one per build.
+      if (isNewArchitectureEnabled()) {
+        java.srcDirs += ["src/newarch/java"]
+      } else {
+        java.srcDirs += ["src/oldarch/java"]
+      }
+    }
+  }
+
   buildTypes {
     release {
       minifyEnabled false

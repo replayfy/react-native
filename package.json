@@ -48,7 +48,7 @@
   },
   "codegenConfig": {
     "name": "RNReplayNativeSpec",
-    "type": "modules",
+    "type": "all",
     "jsSrcsDir": "src",
     "android": {
       "javaPackageName": "com.replayfy.reactnative"

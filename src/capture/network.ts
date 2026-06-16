@@ -21,9 +21,24 @@ export function installNetworkCapture(
   emit: Emit
 ): NetworkCaptureHandle {
   const redact = opts.redactHeaders ?? DEFAULT_REDACT;
-  const captureBodies = opts.captureBodies ?? false;
+  // Capture request/response bodies by default — the Network tab's Payload +
+  // Response panels are empty without them. Sensitive headers are still
+  // redacted via `redact`; callers can opt out with `captureBodies: false`.
+  const captureBodies = opts.captureBodies ?? true;
   const maxBody = opts.maxBodyBytes ?? 4096;
   const ignore = opts.ignoreUrls ?? [];
+
+  // Recording must never break the host's request. The emit callback hops to
+  // the native bridge, so guard it the same way console/error capture do — a
+  // throw here (e.g. native unreachable) must not reject the caller's
+  // fetch().then / XHR handler.
+  const safeEmit: Emit = (record) => {
+    try {
+      emit(record);
+    } catch {
+      // swallow — a dropped network record is never worth a host-app failure
+    }
+  };
 
   const isIgnored = (url: string): boolean =>
     ignore.some((m) => (typeof m === 'string' ? url.includes(m) : m.test(url)));
@@ -116,7 +131,7 @@ export function installNetworkCapture(
         resBody: string | null,
         error?: string
       ) =>
-        emit({
+        safeEmit({
           url,
           method,
           status,
@@ -158,6 +173,15 @@ export function installNetworkCapture(
       private _m = 'GET';
       private _t0 = 0;
       private _rb: string | null = null;
+      private _rh: Record<string, string> = {};
+
+      // axios (the common RN HTTP client) sets request headers via
+      // setRequestHeader, so capture them here — otherwise the XHR path
+      // reports empty request headers.
+      setRequestHeader(name: string, value: string): void {
+        if (keepHeader(name)) this._rh[name] = value;
+        super.setRequestHeader(name, value);
+      }
 
       open(
         method: string,
@@ -187,13 +211,13 @@ export function installNetworkCapture(
                 resBody = null;
               }
             }
-            emit({
+            safeEmit({
               url: this._u,
               method: this._m,
               status: this.status,
               startedAt: this._t0,
               durationMs: Date.now() - this._t0,
-              request: { headers: {}, body: this._rb },
+              request: { headers: this._rh, body: this._rb },
               response: {
                 headers: fromRaw(this.getAllResponseHeaders()),
                 body: resBody,
