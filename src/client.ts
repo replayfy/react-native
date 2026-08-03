@@ -95,6 +95,38 @@ export class ReplayClient {
   }
 
   /**
+   * Report a developer-caught exception on the session timeline. Emits the same
+   * `$exception` event the automatic (ErrorUtils) handler emits, so a handled
+   * error is first-class in the dashboard's issues. `handled` defaults to true
+   * (non-fatal); it maps to the wire's `fatal` discriminator (`fatal = !handled`).
+   * Extra keys on `opts` are merged into the payload.
+   */
+  captureException(
+    error: unknown,
+    opts?: { handled?: boolean } & Record<string, unknown>,
+  ): void {
+    const native = getNative();
+    if (!native) return;
+    const err = error as Error | undefined;
+    const { handled = true, ...extra } = opts ?? {};
+    // Mirror the auto handler's payload (capture/errors.ts) exactly, plus fatal.
+    const core = {
+      message: err?.message ?? String(error),
+      stack: err?.stack ?? null,
+      fatal: !handled,
+    };
+    let payload: string;
+    try {
+      payload = JSON.stringify({ ...core, ...extra });
+    } catch {
+      // A non-serializable extra prop (circular ref / BigInt) must NEVER crash
+      // the host app from a crash-reporting call — drop the extras, keep the error.
+      payload = JSON.stringify(core);
+    }
+    native.track('$exception', payload);
+  }
+
+  /**
    * Record a text input's value on the session timeline. Call from a
    * `TextInput`'s `onEndEditing` (RN manages its own text widgets, so there's
    * no native field for the engine to auto-observe). Pass `masked: true` for
