@@ -1,18 +1,14 @@
 name: Publish (npm)
 
-# Auto-publish on merge to main when package.json's version is new (npm rejects
-# duplicate versions, so a plain "publish every push" fails on the 2nd merge).
-# NOTE: this package wraps the native iOS/Android SDKs — publish/tag those first
-# or consumers can't build against a version that doesn't exist yet.
+# Publish on a version TAG (not a bare push to main), so shipping a release is an
+# explicit, auditable action. NOTE: this package wraps the native iOS/Android
+# SDKs — publish/tag those first or consumers can't build against a version that
+# doesn't exist yet. Release ritual:
+#   1. bump "version" in package.json, merge to main
+#   2. git tag v0.0.2 && git push origin v0.0.2   -> this workflow publishes
 on:
   push:
-    branches: [main]
-    paths:
-      - "src/**"
-      - "ios/**"
-      - "android/**"
-      - "package.json"
-      - ".github/workflows/publish.yml"
+    tags: ["v[0-9]+.[0-9]+.[0-9]+*"]
 
 jobs:
   publish:
@@ -21,9 +17,9 @@ jobs:
       contents: read
       id-token: write # npm provenance
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: "20.17.0"
           registry-url: "https://registry.npmjs.org"
