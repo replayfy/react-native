@@ -1,0 +1,58 @@
+name: Publish (npm)
+
+# Auto-publish on merge to main when package.json's version is new (npm rejects
+# duplicate versions, so a plain "publish every push" fails on the 2nd merge).
+# NOTE: this package wraps the native iOS/Android SDKs — publish/tag those first
+# or consumers can't build against a version that doesn't exist yet.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "src/**"
+      - "ios/**"
+      - "android/**"
+      - "package.json"
+      - ".github/workflows/publish.yml"
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # npm provenance
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20.17.0"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Install
+        run: |
+          if [ -f package-lock.json ]; then npm ci; else npm install; fi
+
+      - name: Publish only if the version is new
+        id: check
+        run: |
+          NAME=$(node -p "require('./package.json').name")
+          VER=$(node -p "require('./package.json').version")
+          if npm view "$NAME@$VER" version >/dev/null 2>&1; then
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::$NAME@$VER already on npm — skipping."
+          else
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+            echo "::notice::Publishing $NAME@$VER"
+          fi
+
+      # `prepare` (react-native-builder-bob) runs automatically on publish; build
+      # explicitly too so a failure surfaces before the publish step.
+      - name: Build
+        if: steps.check.outputs.publish == 'true'
+        run: npm run prepare
+
+      - name: Publish to npm
+        if: steps.check.outputs.publish == 'true'
+        run: npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

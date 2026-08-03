@@ -1,18 +1,33 @@
 {
-  "name": "react-native-replayfy",
+  "name": "@replayfyapp/react-native",
   "version": "0.0.1",
-  "description": "Replayfy session replay + analytics connector for React Native",
+  "description": "Session replay, product analytics & error monitoring for React Native",
   "main": "lib/commonjs/index",
   "module": "lib/module/index",
   "types": "lib/typescript/src/index.d.ts",
   "react-native": "src/index",
   "source": "src/index",
+  "homepage": "https://replayfy.app",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/replayfy/react-native.git"
+  },
+  "bugs": {
+    "url": "https://github.com/replayfy/react-native/issues"
+  },
+  "author": "Replayfy",
+  "publishConfig": {
+    "access": "public"
+  },
   "files": [
     "src",
     "lib",
     "android",
     "ios",
     "*.podspec",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md",
     "!ios/build",
     "!android/build",
     "!android/gradle",
@@ -32,7 +47,7 @@
     "analytics",
     "replayfy"
   ],
-  "license": "UNLICENSED",
+  "license": "MIT",
   "private": false,
   "peerDependencies": {
     "react": "*",

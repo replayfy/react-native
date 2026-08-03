@@ -1,66 +1,185 @@
-# react-native-replayfy
+# Replayfy for React Native
 
-Replayfy session replay + analytics for React Native.
+> Session replay, product analytics & error monitoring for React Native apps.
 
-A thin client over the native Replayfy SDKs (Android + iOS), which do the
-heavy lifting — screenshots, taps, performance, crashes. The JS layer adds
-what the native side can't see from React Native: **JS network traffic,
-`console` output, and unhandled JS errors**, plus ergonomic helpers for
-masking and navigation.
+Replayfy records what your users actually do — screens, taps, gestures,
+network calls, console output, and crashes — and turns it into replayable
+sessions, product analytics, and error insights in your [Replayfy dashboard](https://replayfy.app).
+
+## Features
+
+- **Session replay** — automatic capture of screens, taps, gestures, and
+  navigation, replayed pixel-for-pixel in the dashboard.
+- **Product analytics** — identify users, track custom events, and set
+  user/session properties to power funnels and cohorts.
+- **Error monitoring** — automatic unhandled-error capture plus a
+  `captureException` API for handled errors, with full stack traces.
+- **Network & console capture** — every `fetch`/`XHR` request and
+  `console.*` line is attached to the session timeline.
+- **Privacy first** — mask any element with `<ReplayMask>`, auto-mask secure
+  inputs, occlude whole screens, and redact sensitive network headers.
+- **React Navigation aware** — one-line screen tracking for React Navigation.
+- **Native performance** — recording runs on the native iOS/Android engines,
+  keeping the JS thread free.
 
 ## Install
 
 ```sh
-npm install react-native-replayfy
+npm install @replayfyapp/react-native
+```
+
+Then install the iOS pods:
+
+```sh
 cd ios && pod install
 ```
+
+React Native links the native module automatically. Rebuild the app (a fresh
+`npx react-native run-ios` / `run-android`) after installing so the native
+module is bundled.
 
 ## Quick start
 
 ```tsx
-import Replay, { ReplayProvider, ReplayMask } from 'react-native-replayfy';
+import Replay from '@replayfyapp/react-native';
 
-// Option A — imperative:
 Replay.start({
   projectKey: 'rpl_pk_xxxxxxxx',
-  ingestUrl: 'https://ingest.replayfy.io',
+  ingestUrl: 'https://us.replayfy.app',
 });
-
-// Option B — provider (boots once on mount):
-<ReplayProvider config={{ projectKey: 'rpl_pk_xxx', ingestUrl: '…' }}>
-  <App />
-</ReplayProvider>;
 ```
 
-```ts
+Or boot once from a provider at the top of your tree:
+
+```tsx
+import { ReplayProvider } from '@replayfyapp/react-native';
+
+export default function App() {
+  return (
+    <ReplayProvider
+      config={{
+        projectKey: 'rpl_pk_xxxxxxxx',
+        ingestUrl: 'https://us.replayfy.app',
+      }}
+    >
+      <RootNavigator />
+    </ReplayProvider>
+  );
+}
+```
+
+Once recording, identify your users and track what matters:
+
+```tsx
 Replay.identify('user_123', { plan: 'pro', email: 'a@b.com' });
-Replay.track('purchase', { amount: 4200 });
+Replay.track('purchase', { amount: 4200, currency: 'USD' });
 Replay.screen('Checkout');
-const id = await Replay.getSessionId();
 ```
 
-## Masking
+## Configuration
 
-Wrap anything sensitive — it's masked in playback via the native privacy
-registry (resolved through the React node, no bespoke wrapper component):
+Pass these to `Replay.start(config)`:
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `projectKey` | `string` | **required** | Your project API key from the dashboard. |
+| `ingestUrl` | `string` | **required** | Ingest host, e.g. `https://us.replayfy.app`. |
+| `distinctId` | `string` | — | Known user id at start (otherwise an install-stable anonymous id is used). |
+| `recordScreen` | `boolean` | `true` | Capture screen frames. |
+| `recordNetwork` | `boolean` | `true` | Capture `fetch` + `XHR` traffic. |
+| `recordConsole` | `boolean` | `true` | Capture `console.*` output. |
+| `recordErrors` | `boolean` | `true` | Capture unhandled JS errors. |
+| `recordPerformance` | `boolean` | `true` | Capture performance vitals. |
+| `maskAllInputs` | `boolean` | `false` | Mask every text input in replay. |
+| `fps` | `number` | `1` | Screen snapshot frames per second. |
+| `wifiOnly` | `boolean` | `false` | Only upload over Wi-Fi. |
+| `debug` | `boolean` | `false` | Verbose SDK logging. |
+| `network` | `object` | — | Network capture tuning (see below). |
+
+**Network capture options** (`config.network`):
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `captureBodies` | `boolean` | `false` | Capture request/response bodies. |
+| `maxBodyBytes` | `number` | `4096` | Truncate captured bodies beyond this length. |
+| `redactHeaders` | `string[] \| boolean` | sensitive denylist | Header names to drop; `true` drops all, `false` keeps all. |
+| `ignoreUrls` | `Array<string \| RegExp>` | — | URLs to skip entirely (substring for strings, `.test` for RegExp). |
+
+## API
+
+Reach the client through the default export (`Replay`), or `getClient()`.
+
+### `start(config)`
+
+Boot the SDK and start recording. Idempotent.
 
 ```tsx
-<ReplayMask>
-  <CardNumberField />
-</ReplayMask>
+Replay.start({ projectKey: 'rpl_pk_xxx', ingestUrl: 'https://us.replayfy.app' });
 ```
 
-Secure / password inputs are masked automatically; set
-`maskAllInputs: true` to mask every input.
+### `identify(distinctId, traits?)`
 
-## Navigation (React Navigation)
-
-Dependency-free helper — wire it to your container:
+Attach a known-user identity, with optional traits stored as metadata.
 
 ```tsx
-import { trackScreens } from 'react-native-replayfy';
+Replay.identify('user_123', { plan: 'pro', email: 'a@b.com' });
+```
+
+### `track(name, props?)`
+
+Record a custom timeline / funnel event.
+
+```tsx
+Replay.track('add_to_cart', { sku: 'AB-12', qty: 2 });
+```
+
+### `captureException(error, opts?)`
+
+Report a handled error to the session timeline and the dashboard's issues.
+`handled` defaults to `true`; extra keys on `opts` are merged into the payload.
+
+```tsx
+try {
+  await checkout();
+} catch (err) {
+  Replay.captureException(err, { handled: true, step: 'payment' });
+}
+```
+
+### `stopApplicationAndUploadData()`
+
+Flush and upload the current session's buffered data immediately (e.g. before
+a logout).
+
+```tsx
+Replay.stopApplicationAndUploadData();
+```
+
+### `stop()`
+
+Stop recording, flush, and detach the JS observers.
+
+```tsx
+Replay.stop();
+```
+
+### `screen(name)`
+
+Set the current screen name.
+
+```tsx
+Replay.screen('Checkout');
+```
+
+### `trackScreens(navigationRef)`
+
+Automatic screen tracking for React Navigation.
+
+```tsx
+import { trackScreens } from '@replayfyapp/react-native';
 
 const navRef = useNavigationContainerRef();
+
 <NavigationContainer
   ref={navRef}
   onReady={() => trackScreens(navRef)}
@@ -68,65 +187,104 @@ const navRef = useNavigationContainerRef();
 />;
 ```
 
-## Text input tracking
+### `trackInput(label, value, masked?)`
 
-Secure inputs auto-mask. To also record *what* a user types (funnel
-debugging), call `trackInput` from a `TextInput`'s `onEndEditing` — pass
-`masked: true` for sensitive fields (the value is dropped to `"***"` and
-never leaves the device):
+Record a text input's value from a `TextInput`'s `onEndEditing`. Pass
+`masked: true` for sensitive fields — the value is dropped (recorded as
+`"***"`) and never leaves the device.
 
 ```tsx
-<TextInput placeholder="Email"
-  onEndEditing={(e) => Replay.trackInput('Email', e.nativeEvent.text)} />
-<TextInput secureTextEntry
-  onEndEditing={(e) => Replay.trackInput('Password', e.nativeEvent.text, true)} />
+<TextInput
+  placeholder="Email"
+  onEndEditing={(e) => Replay.trackInput('Email', e.nativeEvent.text)}
+/>
+<TextInput
+  secureTextEntry
+  onEndEditing={(e) => Replay.trackInput('Password', e.nativeEvent.text, true)}
+/>
 ```
 
-## Methods
+### Properties & tags
 
-| Method | Purpose |
-|---|---|
-| `start(config)` | Boot + start recording |
-| `identify(distinctId, traits?)` | Attach a known user |
-| `track(name, props?)` | Custom timeline / funnel event |
-| `trackInput(label, value, masked?)` | Record a text input's value (masked → `"***"`) |
-| `screen(name)` | Set the current screen name |
-| `setMetadata` / `setUserProperty` / `setSessionProperty` | Sticky key/values |
-| `addTagWithProperties(name, props?)` | Tag the session |
-| `getSessionId()` → `Promise` | Resolve the active session id |
-| `setMaskStyle(style)` | Global mask style (`ReplayMaskStyle.Blur` / `Overlay` / `Pixelate`) |
-| `pauseRecording` / `resumeRecording` / `stop` / `startNewSession` / `cancelSession` | Lifecycle |
-| `optOut(bool)` / `isOptedOut()` | GDPR opt-out |
-| `urlForCurrentSession()` / `urlForCurrentUser()` | Session / user deep links |
-| `<ReplayMask>` | Mask sensitive content (wrap any element) |
+```tsx
+Replay.setUserProperty('plan', 'pro');       // sticky, user-level
+Replay.setSessionProperty('ab_variant', 'B'); // this session only
+Replay.setMetadata('team', 'acme');          // sticky metadata
+Replay.addTagWithProperties('promo_seen', { id: 'summer' });
+```
 
-Native screenshots, taps, gestures, screen navigation, device info
-(incl. network type), performance, and crashes are captured automatically.
+### Session control
 
-## `Replay.start(config)` options
+```tsx
+Replay.pauseRecording();
+Replay.resumeRecording();
+Replay.startNewSession();
+Replay.cancelSession();               // discard without uploading
+const recording = await Replay.isRecording();
+const id = await Replay.getSessionId();
+```
 
-| Option | Type | Default | Description |
-|---|---|---|---|
-| `projectKey` | string | **required** | Project API key |
-| `ingestUrl` | string | **required** | Ingest base URL |
-| `distinctId` | string | — | Known user id at start |
-| `recordScreen` | boolean | `true` | Native screenshots/frames |
-| `recordNetwork` | boolean | `true` | JS `fetch` + `XHR` capture |
-| `recordConsole` | boolean | `true` | `console.*` capture |
-| `recordErrors` | boolean | `true` | Unhandled JS error capture |
-| `recordPerformance` | boolean | `true` | Native perf vitals |
-| `maskAllInputs` | boolean | `false` | Mask all text inputs |
-| `fps` | number | `1` | Snapshot frames/sec |
-| `wifiOnly` | boolean | `false` | Upload only on wifi |
-| `network` | object | — | `{ captureBodies, maxBodyBytes, redactHeaders, ignoreUrls }` |
+### Deep links
 
-## Status
+```tsx
+const sessionUrl = await Replay.urlForCurrentSession();
+const userUrl = await Replay.urlForCurrentUser();
+```
 
-JS layer + native bridges (iOS / Android) are functional and type-checked.
-Network, console, errors, masking, text-input, and screen tracking are
-wired end-to-end. `ReplayMask` renders under both the New (Fabric) and old
-architectures.
+### Privacy opt-out (GDPR)
 
-## License
+```tsx
+Replay.optOut(true);                  // stop all recording for this user
+const out = await Replay.isOptedOut();
+```
 
-Commercial. Contact help@replayfy.io for terms.
+### Session extras
+
+```tsx
+Replay.markSessionAsFavorite();
+Replay.setAppVersion('1.4.2', '142');
+Replay.setPushNotificationToken(token);
+Replay.log('checkout started', 'info'); // bridge a log line onto the timeline
+```
+
+## Privacy & masking
+
+Replayfy is built to keep sensitive data off your servers.
+
+- **`<ReplayMask>`** — wrap any element to mask it in replay:
+
+  ```tsx
+  import { ReplayMask } from '@replayfyapp/react-native';
+
+  <ReplayMask>
+    <CardNumberField />
+  </ReplayMask>;
+  ```
+
+- **Automatic input masking** — secure/password inputs are masked
+  automatically. Set `maskAllInputs: true` to mask every input.
+
+- **Mask style** — choose how masked regions render:
+
+  ```tsx
+  import { ReplayMaskStyle } from '@replayfyapp/react-native';
+
+  Replay.setMaskStyle(ReplayMaskStyle.Blur);    // Blur | Overlay | Pixelate
+  ```
+
+- **Screen occlusion** — hide fields or entire sensitive flows from replay:
+
+  ```tsx
+  Replay.occludeAllTextFields(true);
+  Replay.occludeAllTextView(true);
+  Replay.occludeSensitiveScreen(true);
+  ```
+
+- **Network redaction** — drop sensitive headers or skip URLs entirely via
+  `config.network.redactHeaders` and `config.network.ignoreUrls`; request and
+  response bodies are off by default.
+
+## Links
+
+- Docs: https://replayfy.app
+- Dashboard: https://replayfy.app
