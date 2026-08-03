@@ -38,7 +38,7 @@ generate them once, then link the local native SDKs.
 Requires CocoaPods (`sudo gem install cocoapods`). Add a local pod entry
 to the app's `Podfile` so the bridge resolves the SDK:
 ```ruby
-pod 'Replay', :path => '../../replay-ios-sdk'
+pod 'Replayfy', :path => '../../replay-ios-sdk'
 ```
 Then `cd ios && pod install && cd .. && npm run ios`. Use
 `http://127.0.0.1:4000` for `ingestUrl` on the simulator.

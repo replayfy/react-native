@@ -38,6 +38,23 @@ React Native links the native module automatically. Rebuild the app (a fresh
 `npx react-native run-ios` / `run-android`) after installing so the native
 module is bundled.
 
+### Android (JitPack)
+
+The native Android recording engine is distributed through JitPack. If your app
+uses Gradle's centralized repositories (a `dependencyResolutionManagement` block
+in `android/settings.gradle`), add JitPack there so the transitive native SDK
+resolves:
+
+```gradle
+dependencyResolutionManagement {
+  repositories {
+    google()
+    mavenCentral()
+    maven { url 'https://jitpack.io' }
+  }
+}
+```
+
 ## Quick start
 
 ```tsx

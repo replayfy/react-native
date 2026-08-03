@@ -79,6 +79,10 @@ android {
 }
 
 repositories {
+  // JitPack serves the published native Android SDK
+  // (com.github.replayfy:android-sdk). mavenLocal is only hit when building
+  // against a local `./gradlew :sdk:publishToMavenLocal` during development.
+  maven { url "https://jitpack.io" }
   mavenLocal()
   mavenCentral()
   google()
@@ -90,6 +94,6 @@ dependencies {
   //noinspection GradleDynamicVersion
   implementation "com.facebook.react:react-native:+"
   implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-  // The native Android SDK that does the real recording (mavenLocal in dev).
-  implementation "com.replayfy:android-sdk:0.0.1"
+  // The native Android SDK that does the real recording, published via JitPack.
+  implementation "com.github.replayfy:android-sdk:0.0.1"
 }

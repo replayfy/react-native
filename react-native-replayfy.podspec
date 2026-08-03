@@ -17,7 +17,8 @@ Pod::Spec.new do |s|
 
   # React Native core (bridge, UIManager, promise blocks).
   s.dependency "React-Core"
-  # The native iOS SDK that does the real recording. For local development
-  # the example app points this at ../.. via a :path pod entry.
-  s.dependency "Replay"
+  # The native iOS SDK that does the real recording — published to CocoaPods
+  # trunk as "Replayfy". For local development the example app overrides this
+  # with a :path pod entry pointing at the sibling SDK checkout.
+  s.dependency "Replayfy"
 end
