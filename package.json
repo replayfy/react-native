@@ -1,6 +1,6 @@
 {
   "name": "@replayfyapp/react-native",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Session replay, product analytics & error monitoring for React Native",
   "main": "lib/commonjs/index",
   "module": "lib/module/index",
@@ -47,7 +47,7 @@
     "analytics",
     "replayfy"
   ],
-  "license": "MIT",
+  "license": "BSD-3-Clause",
   "private": false,
   "peerDependencies": {
     "react": "*",
