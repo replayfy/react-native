@@ -1,6 +1,6 @@
 {
   "name": "@replayfyapp/react-native",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Session replay, product analytics & error monitoring for React Native",
   "main": "lib/commonjs/index",
   "module": "lib/module/index",
