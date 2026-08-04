@@ -4,7 +4,7 @@
 
 Replayfy records what your users actually do — screens, taps, gestures,
 network calls, console output, and crashes — and turns it into replayable
-sessions, product analytics, and error insights in your [Replayfy dashboard](https://replayfy.app).
+sessions, product analytics, and error insights in your [Replayfy dashboard](https://app.replayfy.app).
 
 ## Features
 
@@ -304,4 +304,4 @@ Replayfy is built to keep sensitive data off your servers.
 ## Links
 
 - Docs: https://docs.replayfy.app/platforms/react-native
-- Dashboard: https://replayfy.app
+- Dashboard: https://app.replayfy.app
