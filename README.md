@@ -303,5 +303,5 @@ Replayfy is built to keep sensitive data off your servers.
 
 ## Links
 
-- Docs: https://replayfy.app
+- Docs: https://docs.replayfy.app/platforms/react-native
 - Dashboard: https://replayfy.app
