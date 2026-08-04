@@ -6,7 +6,7 @@ import { getClient, ReplayClient } from './client';
  * ```tsx
  * import Replay, { ReplayProvider, ReplayMask } from 'react-native-replayfy';
  *
- * Replay.start({ projectKey: 'rpl_pk_xxx', ingestUrl: 'https://ingest.replayfy.io' });
+ * Replay.start({ apiKey: 'rpl_pk_xxx', apiHost: 'https://us.replayfy.app' });
  * Replay.identify('user_123', { plan: 'pro' });
  * Replay.track('purchase', { amount: 4200 });
  *

@@ -39,8 +39,8 @@ export class ReplayClient {
     this.started = true;
 
     native.boot(
-      config.projectKey,
-      config.ingestUrl,
+      config.apiKey,
+      config.apiHost,
       JSON.stringify({
         recordScreen: config.recordScreen ?? true,
         recordPerformance: config.recordPerformance ?? true,

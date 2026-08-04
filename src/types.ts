@@ -28,10 +28,10 @@ export interface NetworkCaptureOptions {
 
 /** Top-level config passed to `Replay.start(config)`. */
 export interface ReplayConfig {
-  /** Project API key from the dashboard. */
-  projectKey: string;
-  /** Ingest base URL, e.g. `https://ingest.replayfy.io`. */
-  ingestUrl: string;
+  /** Project API key from the dashboard (publishable, e.g. `rpl_pk_…`). */
+  apiKey: string;
+  /** Ingest base URL, e.g. `https://us.replayfy.app`. */
+  apiHost: string;
   /** Known user id at start (else an install-stable anonymous id). */
   distinctId?: string;
 

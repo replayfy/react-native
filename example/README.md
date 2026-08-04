@@ -27,7 +27,7 @@ generate them once, then link the local native SDKs.
 2. Ensure the app's `android/build.gradle` repositories include
    `mavenLocal()`. Autolinking picks up `react-native-replayfy` from
    `node_modules`.
-3. Point `ingestUrl` at the host from the emulator: `http://10.0.2.2:4000`.
+3. Point `apiHost` at the host from the emulator: `http://10.0.2.2:4000`.
 4. ```sh
    export ANDROID_HOME=$HOME/Library/Android/sdk
    $ANDROID_HOME/emulator/emulator -avd replay_smoke &
@@ -41,7 +41,7 @@ to the app's `Podfile` so the bridge resolves the SDK:
 pod 'Replayfy', :path => '../../replay-ios-sdk'
 ```
 Then `cd ios && pod install && cd .. && npm run ios`. Use
-`http://127.0.0.1:4000` for `ingestUrl` on the simulator.
+`http://127.0.0.1:4000` for `apiHost` on the simulator.
 
 ## What to expect on the dashboard
 

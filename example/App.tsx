@@ -14,9 +14,9 @@ export default function App() {
 
   useEffect(() => {
     Replay.start({
-      projectKey: 'rpl_pk_ef7e2fc8c7f952bcd0a69466e1a42a0625f9',
+      apiKey: 'rpl_pk_ef7e2fc8c7f952bcd0a69466e1a42a0625f9',
       // Android emulator → host machine. (iOS sim would use 127.0.0.1.)
-      ingestUrl: 'http://10.0.2.2:4000',
+      apiHost: 'http://10.0.2.2:4000',
       recordNetwork: true,
       recordConsole: true,
       recordErrors: true,

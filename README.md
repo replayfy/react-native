@@ -61,8 +61,8 @@ dependencyResolutionManagement {
 import Replay from '@replayfyapp/react-native';
 
 Replay.start({
-  projectKey: 'rpl_pk_xxxxxxxx',
-  ingestUrl: 'https://us.replayfy.app',
+  apiKey: 'rpl_pk_xxxxxxxx',
+  apiHost: 'https://us.replayfy.app',
 });
 ```
 
@@ -75,8 +75,8 @@ export default function App() {
   return (
     <ReplayProvider
       config={{
-        projectKey: 'rpl_pk_xxxxxxxx',
-        ingestUrl: 'https://us.replayfy.app',
+        apiKey: 'rpl_pk_xxxxxxxx',
+        apiHost: 'https://us.replayfy.app',
       }}
     >
       <RootNavigator />
@@ -99,8 +99,8 @@ Pass these to `Replay.start(config)`:
 
 | Option | Type | Default | Description |
 |---|---|---|---|
-| `projectKey` | `string` | **required** | Your project API key from the dashboard. |
-| `ingestUrl` | `string` | **required** | Ingest host, e.g. `https://us.replayfy.app`. |
+| `apiKey` | `string` | **required** | Your project API key from the dashboard. |
+| `apiHost` | `string` | **required** | Ingest host, e.g. `https://us.replayfy.app`. |
 | `distinctId` | `string` | — | Known user id at start (otherwise an install-stable anonymous id is used). |
 | `recordScreen` | `boolean` | `true` | Capture screen frames. |
 | `recordNetwork` | `boolean` | `true` | Capture `fetch` + `XHR` traffic. |
@@ -131,7 +131,7 @@ Reach the client through the default export (`Replay`), or `getClient()`.
 Boot the SDK and start recording. Idempotent.
 
 ```tsx
-Replay.start({ projectKey: 'rpl_pk_xxx', ingestUrl: 'https://us.replayfy.app' });
+Replay.start({ apiKey: 'rpl_pk_xxx', apiHost: 'https://us.replayfy.app' });
 ```
 
 ### `identify(distinctId, traits?)`
