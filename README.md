@@ -142,6 +142,10 @@ Attach a known-user identity, with optional traits stored as metadata.
 Replay.identify('user_123', { plan: 'pro', email: 'a@b.com' });
 ```
 
+Set a `picture` (or its alias `avatar`) to a public https image URL — top-level
+or nested inside `customProps` — to give the user an avatar in the dashboard;
+non-URL values are ignored.
+
 ### `track(name, props?)`
 
 Record a custom timeline / funnel event.
