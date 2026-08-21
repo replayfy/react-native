@@ -305,3 +305,18 @@ Replayfy is built to keep sensitive data off your servers.
 
 - Docs: https://docs.replayfy.app/platforms/react-native
 - Dashboard: https://app.replayfy.app
+
+## Native SDK distribution & Android build troubleshooting
+
+`react-native-replayfy` is a thin bridge over the native Replayfy SDKs:
+
+- **Android** → `app.replayfy:android-sdk` from **Maven Central** (primary;
+  JitPack `com.github.replayfy:android-sdk` is a fallback).
+- **iOS** → the **`Replayfy`** pod via **CocoaPods** (RN's default iOS channel).
+
+**Android — `No route to host` fetching from `jitpack.io`:** the build host
+can't reach JitPack (corporate/CI firewall, proxy, or IPv6). Maven Central (now
+primary) avoids this. If a build still hits JitPack:
+- confirm reachability on the *build host*: `curl -I https://jitpack.io`
+- behind a proxy → set `systemProp.https.proxyHost/proxyPort` in `gradle.properties`
+- IPv6 issue → `org.gradle.jvmargs=-Djava.net.preferIPv4Stack=true`
