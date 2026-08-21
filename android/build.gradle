@@ -79,13 +79,17 @@ android {
 }
 
 repositories {
-  // JitPack serves the published native Android SDK
-  // (com.github.replayfy:android-sdk). mavenLocal is only hit when building
-  // against a local `./gradlew :sdk:publishToMavenLocal` during development.
-  maven { url "https://jitpack.io" }
-  mavenLocal()
-  mavenCentral()
   google()
+  // PRIMARY: the native Android SDK resolves from Maven Central
+  // (app.replayfy:android-sdk) — mirrored + cached, so builds don't fail with
+  // "No route to host" the way a single-host JitPack fetch can on corporate/CI
+  // networks.
+  mavenCentral()
+  // FALLBACK: JitPack (com.github.replayfy:android-sdk), on-demand from a git
+  // tag. Kept so older pins / pre-Central versions still resolve.
+  maven { url "https://jitpack.io" }
+  // Dev only — a local `./gradlew :sdk:publishToMavenLocal`.
+  mavenLocal()
 }
 
 def kotlin_version = getExtOrDefault("kotlinVersion")
@@ -94,6 +98,9 @@ dependencies {
   //noinspection GradleDynamicVersion
   implementation "com.facebook.react:react-native:+"
   implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-  // The native Android SDK that does the real recording, published via JitPack.
-  implementation "com.github.replayfy:android-sdk:0.0.3"
+  // The native Android SDK that does the real recording, from Maven Central.
+  // NOTE: requires this version published to Central (app.replayfy:android-sdk)
+  // — see replay-android-sdk/PUBLISHING.md. Until then the JitPack fallback
+  // coordinate is `com.github.replayfy:android-sdk:0.0.3`.
+  implementation "app.replayfy:android-sdk:0.0.3"
 }
