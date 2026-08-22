@@ -204,6 +204,23 @@ const navRef = useNavigationContainerRef();
 />;
 ```
 
+### Screen exclusion
+
+Exclude a screen from frame capture **by name**. While an excluded screen is in
+the foreground the periodic screenshot loop pauses — taps, network, console, and
+performance events keep flowing — and it resumes on the next non-excluded screen.
+Names are matched case-insensitively against the tagged / auto-tagged screen name
+(see `screen` / `trackScreens`).
+
+This is distinct from `occludeSensitiveScreen`, which keeps recording frames but
+blanks them: exclusion captures no frames of that screen at all.
+
+```tsx
+Replay.excludeScreen('PinEntry');                    // stop capturing frames here
+Replay.unexcludeScreen('PinEntry');                  // capture it again
+Replay.setExcludedScreens(['PinEntry', 'Billing']);  // replace the whole denylist
+```
+
 ### `trackInput(label, value, masked?)`
 
 Record a text input's value from a `TextInput`'s `onEndEditing`. Pass
@@ -236,9 +253,40 @@ Replay.addTagWithProperties('promo_seen', { id: 'summer' });
 Replay.pauseRecording();
 Replay.resumeRecording();
 Replay.startNewSession();
-Replay.cancelSession();               // discard without uploading
+Replay.cancelSession();               // discard the current session without uploading (a fresh one can start after)
 const recording = await Replay.isRecording();
 const id = await Replay.getSessionId();
+```
+
+### `enableAdvancedGestureRecognizer(enabled)`
+
+Additionally capture **pinch** and **rotate** gestures, on top of the always-on
+tap / swipe / long-press. Off by default.
+
+```tsx
+Replay.enableAdvancedGestureRecognizer(true);
+```
+
+### `allowShortBreakForAnotherApp(allow, breakWindowMs?)`
+
+Allow a brief switch to another app without ending the session. If the app comes
+back to the foreground within `breakWindowMs` the **same** session continues; a
+longer gap starts a **fresh** session on return. `breakWindowMs` defaults to
+`30000` (30s).
+
+```tsx
+Replay.allowShortBreakForAnotherApp(true);         // 30s grace window
+Replay.allowShortBreakForAnotherApp(true, 60000);  // allow up to 60s away
+```
+
+### `setMultiSessionRecord(enabled)`
+
+Record multiple sessions per app launch (the default) or only one. When turned
+off, the current/next session records and then no further sessions open for the
+rest of this process.
+
+```tsx
+Replay.setMultiSessionRecord(false);  // record a single session this launch
 ```
 
 ### Deep links
