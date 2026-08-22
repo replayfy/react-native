@@ -5,6 +5,7 @@ import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContextBaseJavaModule
 import com.facebook.react.bridge.ReactMethod
+import com.facebook.react.bridge.ReadableArray
 import com.replayfy.android.Replay
 import com.replayfy.android.ReplayConfig
 import org.json.JSONObject
@@ -115,6 +116,11 @@ class ReplayNativeModule(private val reactContext: ReactApplicationContext) :
 
   // ── Screens ──
   @ReactMethod fun setAutomaticScreenNameTagging(enabled: Boolean) { Replay.setAutomaticScreenNameTagging(enabled) }
+  @ReactMethod fun excludeScreen(name: String) { Replay.excludeScreen(name) }
+  @ReactMethod fun unexcludeScreen(name: String) { Replay.unexcludeScreen(name) }
+  @ReactMethod fun setExcludedScreens(names: ReadableArray) {
+    Replay.setExcludedScreens((0 until names.size()).mapNotNull { names.getString(it) })
+  }
 
   // ── Privacy ──
   @ReactMethod fun occludeAllTextFields(occlude: Boolean) { Replay.occludeAllTextFields(occlude) }
@@ -130,7 +136,10 @@ class ReplayNativeModule(private val reactContext: ReactApplicationContext) :
   @ReactMethod fun setPushNotificationToken(token: String) { Replay.setPushNotificationToken(token) }
   @ReactMethod fun setAppVersion(version: String, build: String) { Replay.setAppVersion(version, build.ifEmpty { null }) }
   @ReactMethod fun setMultiSessionRecord(enabled: Boolean) { Replay.setMultiSessionRecord(enabled) }
-  @ReactMethod fun allowShortBreakForAnotherApp(allow: Boolean) { Replay.allowShortBreakForAnotherApp(allow) }
+  @ReactMethod fun allowShortBreakForAnotherApp(allow: Boolean, breakWindowMs: Double) {
+    Replay.allowShortBreakForAnotherApp(allow, breakWindowMs.toLong())
+  }
+  @ReactMethod fun enableAdvancedGestureRecognizer(enabled: Boolean) { Replay.enableAdvancedGestureRecognizer(enabled) }
 
   // ── Deep links ──
   @ReactMethod fun urlForCurrentSession(promise: Promise) { promise.resolve(Replay.urlForCurrentSession() ?: "") }
