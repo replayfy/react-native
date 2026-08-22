@@ -22,8 +22,21 @@ export default function App() {
       recordErrors: true,
     });
     Replay.identify('rn_demo_user', { plan: 'pro' });
+
+    // === Engine-stub bridge tests — each forwards to native; watch [ReplaySdk] ===
+    Replay.enableAdvancedGestureRecognizer(true);       // → facade: enableAdvancedGestureRecognizer(true)
+    Replay.allowShortBreakForAnotherApp(true, 5000);    // → facade: allowShortBreakForAnotherApp(true, 5000ms)
+    Replay.setMultiSessionRecord(true);                 // → facade: setMultiSessionRecord(true)
+    Replay.setExcludedScreens(['Secret']);              // → facade: setExcludedScreens([Secret])
+    Replay.excludeScreen('Vault');                      // → facade: excludeScreen(Vault)
+
     Replay.screen('Home');
     Replay.getSessionId().then(setSessionId);
+
+    // Screen-exclusion round-trip through the bridge: enter 'Secret' (excluded →
+    // PAUSED frames) then leave to 'Home' (→ RESUMED frames).
+    setTimeout(() => Replay.screen('Secret'), 5000);
+    setTimeout(() => Replay.screen('Home'), 8000);
   }, []);
 
   return (
@@ -80,6 +93,13 @@ export default function App() {
                 throw new Error('demo: fatal JS error');
               }, 0);
             }}
+          />
+        </View>
+
+        <View style={{ marginBottom: 12 }}>
+          <Button
+            title="cancelSession (discard)"
+            onPress={() => Replay.cancelSession()}
           />
         </View>
 

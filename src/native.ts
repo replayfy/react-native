@@ -45,6 +45,9 @@ export interface ReplayNativeModule {
 
   // ── Screens ──────────────────────────────────────────────────────
   setAutomaticScreenNameTagging(enabled: boolean): void;
+  excludeScreen(name: string): void;
+  unexcludeScreen(name: string): void;
+  setExcludedScreens(names: string[]): void;
 
   // ── Privacy ──────────────────────────────────────────────────────
   occludeAllTextFields(occlude: boolean): void;
@@ -60,7 +63,8 @@ export interface ReplayNativeModule {
   setPushNotificationToken(token: string): void;
   setAppVersion(version: string, build: string): void;
   setMultiSessionRecord(enabled: boolean): void;
-  allowShortBreakForAnotherApp(allow: boolean): void;
+  allowShortBreakForAnotherApp(allow: boolean, breakWindowMs: number): void;
+  enableAdvancedGestureRecognizer(enabled: boolean): void;
 
   // ── Deep links ───────────────────────────────────────────────────
   urlForCurrentSession(): Promise<string>;

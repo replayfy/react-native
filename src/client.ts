@@ -142,6 +142,15 @@ export class ReplayClient {
     getNative()?.screen(name);
   }
 
+  /** Exclude a screen from recording by name ("don't record this screen"):
+   *  the frame loop pauses while it's foreground, everything else keeps
+   *  flowing. Distinct from occludeSensitiveScreen (records but blanks). */
+  excludeScreen(name: string): void { getNative()?.excludeScreen(name); }
+  /** Stop excluding a previously-excluded screen. */
+  unexcludeScreen(name: string): void { getNative()?.unexcludeScreen(name); }
+  /** Replace the whole excluded-screens denylist. */
+  setExcludedScreens(names: string[]): void { getNative()?.setExcludedScreens(names); }
+
   /**
    * Set the global mask render style — {@link ReplayMaskStyle.Blur} (default)
    * or {@link ReplayMaskStyle.Overlay} (a solid box). Applies to every
@@ -231,8 +240,15 @@ export class ReplayClient {
   setAppVersion(version: string, build = ''): void { getNative()?.setAppVersion(version, build); }
   /** Record multiple sessions per app launch instead of one. */
   setMultiSessionRecord(enabled: boolean): void { getNative()?.setMultiSessionRecord(enabled); }
-  /** Allow a brief switch to another app without ending the session. */
-  allowShortBreakForAnotherApp(allow: boolean): void { getNative()?.allowShortBreakForAnotherApp(allow); }
+  /** Allow a brief switch to another app without ending the session. A gap
+   *  longer than `breakWindowMs` rotates to a fresh session on return. */
+  allowShortBreakForAnotherApp(allow: boolean, breakWindowMs = 30000): void {
+    getNative()?.allowShortBreakForAnotherApp(allow, breakWindowMs);
+  }
+  /** Capture pinch + rotate gestures in addition to tap/swipe/long-press. */
+  enableAdvancedGestureRecognizer(enabled: boolean): void {
+    getNative()?.enableAdvancedGestureRecognizer(enabled);
+  }
   /** Bridge a customer log line into the `$console` event stream (same path
    *  the JS console capture uses — no separate native call needed). */
   log(message: string, level = 'log'): void {

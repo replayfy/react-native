@@ -44,6 +44,9 @@ RCT_EXTERN_METHOD(reportBugEvent:(NSString *)name description:(NSString *)descri
 
 // ── Screens ──
 RCT_EXTERN_METHOD(setAutomaticScreenNameTagging:(BOOL)enabled)
+RCT_EXTERN_METHOD(excludeScreen:(NSString *)name)
+RCT_EXTERN_METHOD(unexcludeScreen:(NSString *)name)
+RCT_EXTERN_METHOD(setExcludedScreens:(NSArray *)names)
 
 // ── Privacy ──
 RCT_EXTERN_METHOD(occludeAllTextFields:(BOOL)occlude)
@@ -60,7 +63,8 @@ RCT_EXTERN_METHOD(markSessionAsFavorite)
 RCT_EXTERN_METHOD(setPushNotificationToken:(NSString *)token)
 RCT_EXTERN_METHOD(setAppVersion:(NSString *)version build:(NSString *)build)
 RCT_EXTERN_METHOD(setMultiSessionRecord:(BOOL)enabled)
-RCT_EXTERN_METHOD(allowShortBreakForAnotherApp:(BOOL)allow)
+RCT_EXTERN_METHOD(allowShortBreakForAnotherApp:(BOOL)allow breakWindowMs:(double)breakWindowMs)
+RCT_EXTERN_METHOD(enableAdvancedGestureRecognizer:(BOOL)enabled)
 
 // ── Deep links ──
 RCT_EXTERN_METHOD(urlForCurrentSession:(RCTPromiseResolveBlock)resolve

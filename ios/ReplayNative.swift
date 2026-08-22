@@ -132,6 +132,15 @@ public final class ReplayNative: NSObject {
   @objc(setAutomaticScreenNameTagging:)
   public func setAutomaticScreenNameTagging(_ enabled: Bool) { Replay.setAutomaticScreenNameTagging(enabled) }
 
+  @objc(excludeScreen:)
+  public func excludeScreen(_ name: String) { Replay.excludeScreen(name) }
+
+  @objc(unexcludeScreen:)
+  public func unexcludeScreen(_ name: String) { Replay.unexcludeScreen(name) }
+
+  @objc(setExcludedScreens:)
+  public func setExcludedScreens(_ names: [String]) { Replay.setExcludedScreens(names) }
+
   // MARK: - Privacy
 
   @objc(occludeAllTextFields:)
@@ -168,8 +177,13 @@ public final class ReplayNative: NSObject {
   @objc(setMultiSessionRecord:)
   public func setMultiSessionRecord(_ enabled: Bool) { Replay.setMultiSessionRecord(enabled) }
 
-  @objc(allowShortBreakForAnotherApp:)
-  public func allowShortBreakForAnotherApp(_ allow: Bool) { Replay.allowShortBreakForAnotherApp(allow) }
+  @objc(allowShortBreakForAnotherApp:breakWindowMs:)
+  public func allowShortBreakForAnotherApp(_ allow: Bool, breakWindowMs: Double) {
+    Replay.allowShortBreakForAnotherApp(allow, windowSeconds: breakWindowMs / 1000.0)
+  }
+
+  @objc(enableAdvancedGestureRecognizer:)
+  public func enableAdvancedGestureRecognizer(_ enabled: Bool) { Replay.enableAdvancedGestureRecognizer(enabled) }
 
   // MARK: - Deep links
 
