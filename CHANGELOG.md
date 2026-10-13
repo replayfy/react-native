@@ -5,6 +5,42 @@ All notable changes to `@replayfyapp/react-native` are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.7] - 2026-10-13
+
+### Fixed
+
+- **Recordings no longer lose frames and events when the app goes to the
+  background**, on iOS and Android. Requires the native iOS SDK `Replayfy`
+  0.0.6 or later and bundles the native Android SDK 0.0.5. Uploads now finish
+  as the app is backgrounded (an iOS background task; a full drain on
+  Android), leftovers go out on return, and a session end that never reached
+  the server is resent on the next launch (Android).
+- **`recordScreen: false` is respected after a return.** The native screenshot
+  timer used to restart when the app came back to the foreground, when a
+  `pauseRecording` was lifted or when the user left an excluded screen, so
+  apps that turned screen capture off got screenshots anyway.
+- **Excluded screens and `pauseRecording` hold** across background,
+  foreground and session rotation; on Android a screen named with `screen()`
+  keeps its name (and its exclusion) when the app returns.
+- **iOS: `pod install` works with `use_frameworks!`.** The pod is now a static
+  framework like the `Replayfy` pod it depends on; before, any app whose
+  Podfile used frameworks failed with "transitive dependencies that include
+  statically linked binaries".
+
+### Changed
+
+- The package and podspec declare the MIT license, matching `LICENSE` (they
+  said BSD-3-Clause).
+
+To update: `npm install @replayfyapp/react-native@0.0.7`, then
+`cd ios && pod update Replayfy --repo-update`, rebuild both apps and ship new
+builds.
+
+## [0.0.6]
+
+- Wire the mobile engine stubs + screen exclusion through the bridge, and
+  bundle native Android SDK 0.0.4.
+
 ## [0.0.5] - 2026-08-21
 
 ### Changed

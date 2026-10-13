@@ -98,9 +98,9 @@ dependencies {
   //noinspection GradleDynamicVersion
   implementation "com.facebook.react:react-native:+"
   implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-  // The native Android SDK that does the real recording, from Maven Central.
-  // NOTE: requires this version published to Central (app.replayfy:android-sdk)
-  // — see replay-android-sdk/PUBLISHING.md. Until then the JitPack fallback
-  // coordinate is `com.github.replayfy:android-sdk:0.0.3`.
-  implementation "app.replayfy:android-sdk:0.0.4"
+  // The native Android SDK that does the real recording, from Maven Central
+  // (JitPack fallback: com.github.replayfy:android-sdk). 0.0.5 keeps frames and
+  // messages across background/resume and never takes native screenshots when
+  // recordScreen is false.
+  implementation "app.replayfy:android-sdk:0.0.5"
 }
