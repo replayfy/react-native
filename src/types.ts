@@ -5,6 +5,7 @@
  *
  *  - `Blur`     — the underlying pixels are blurred.
  *  - `Overlay`  — a solid box is painted over the region (no pixel survives).
+ *                 The default.
  *  - `Pixelate` — the region is reduced to coarse mosaic blocks.
  */
 export enum ReplayMaskStyle {
@@ -15,7 +16,9 @@ export enum ReplayMaskStyle {
 
 /** Options for the JS-side network observer. */
 export interface NetworkCaptureOptions {
-  /** Capture request/response bodies (off by default — PII risk). */
+  /** Capture request/response bodies. Default true (clipped at
+   *  `maxBodyBytes`) — PII risk: set false, or `ignoreUrls`, for endpoints
+   *  whose bodies carry personal data. */
   captureBodies?: boolean;
   /** Truncate captured bodies beyond this many chars. Default 4096. */
   maxBodyBytes?: number;
@@ -46,7 +49,10 @@ export interface ReplayConfig {
   /** Capture native performance vitals. Default true. */
   recordPerformance?: boolean;
 
-  /** Auto-mask all text inputs (native). Default false. */
+  /** Auto-mask all text inputs (native). Default false. Password, card and
+   *  one-time-code fields are masked either way, and the dashboard's "Always
+   *  mask input values" turns this on for every session (false here doesn't
+   *  undo it). */
   maskAllInputs?: boolean;
   /** Snapshot frames per second (native). Default 1. */
   fps?: number;

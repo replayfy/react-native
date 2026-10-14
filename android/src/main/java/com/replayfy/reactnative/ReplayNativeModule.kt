@@ -69,8 +69,11 @@ class ReplayNativeModule(private val reactContext: ReactApplicationContext) :
 
   @ReactMethod
   fun setMaskStyle(style: Int) {
-    // Global default style (blur = 0, overlay = 1) — JS sends the raw index.
-    Replay.setMaskStyle(com.replayfy.android.ReplayMaskStyle.from(style))
+    // Global default style (blur = 0, overlay = 1, pixelate = 2) — JS sends
+    // the raw index. An index we don't know falls back to overlay, the
+    // engine's default (a solid box), never to a weaker style.
+    val known = com.replayfy.android.ReplayMaskStyle.values().firstOrNull { it.raw == style }
+    Replay.setMaskStyle(known ?: com.replayfy.android.ReplayMaskStyle.OVERLAY)
   }
 
   @ReactMethod

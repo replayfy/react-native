@@ -101,6 +101,9 @@ dependencies {
   // The native Android SDK that does the real recording, from Maven Central
   // (JitPack fallback: com.github.replayfy:android-sdk). 0.0.5 keeps frames and
   // messages across background/resume and never takes native screenshots when
-  // recordScreen is false.
-  implementation "app.replayfy:android-sdk:0.0.6"
+  // recordScreen is false. 0.0.7 masks password, card and one-time-code
+  // fields on its own, paints masks solid by default, applies the dashboard's
+  // "always mask input values" and records FLAG_SECURE windows as black
+  // frames.
+  implementation "app.replayfy:android-sdk:0.0.7"
 }

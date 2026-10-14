@@ -21,8 +21,11 @@ Pod::Spec.new do |s|
   # trunk as "Replayfy". For local development the example app overrides this
   # with a :path pod entry pointing at the sibling SDK checkout. 0.0.5 is the
   # first release that keeps frames across background/resume and respects
-  # recordScreen:false, excluded screens and pauses after a return.
-  s.dependency "Replayfy", ">= 0.0.6"
+  # recordScreen:false, excluded screens and pauses after a return. 0.0.7
+  # masks password, card-number and one-time-code fields on its own, paints
+  # masks solid by default and applies the dashboard's "always mask input
+  # values".
+  s.dependency "Replayfy", ">= 0.0.7"
   # Replayfy is a static framework (it links PLCrashReporter's static
   # xcframework), and a pod that depends on one must be static too, or an app
   # whose Podfile uses `use_frameworks!` fails to install.

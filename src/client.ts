@@ -131,7 +131,18 @@ export class ReplayClient {
    * `TextInput`'s `onEndEditing` (RN manages its own text widgets, so there's
    * no native field for the engine to auto-observe). Pass `masked: true` for
    * sensitive fields — the value is dropped (recorded as `"***"`) and never
-   * leaves the device; the field is also blurred in playback.
+   * leaves the device. `masked` only drops the value: it doesn't mask the
+   * field's pixels, and this call can't see the field, so it can't tell a
+   * sensitive one on its own.
+   *
+   * Pixels are masked automatically only for `secureTextEntry` fields,
+   * `autoComplete` cc-number / cc-csc / cc-exp / cc-exp-month / cc-exp-year /
+   * sms-otp (or one-time-code) fields, and anything inside `<ReplayMask>`.
+   * Always pass `masked: true` for those fields. (That `autoComplete` list is
+   * Android's; iOS detects cc-number, one-time-code, current-password and
+   * new-password. On Android a `secureTextEntry` field with
+   * `keyboardType="phone-pad"` or `"email-address"` is not detected: wrap it
+   * in `<ReplayMask>`.)
    */
   trackInput(label: string, value: string, masked = false): void {
     getNative()?.input(value, masked, label);
@@ -152,10 +163,13 @@ export class ReplayClient {
   setExcludedScreens(names: string[]): void { getNative()?.setExcludedScreens(names); }
 
   /**
-   * Set the global mask render style — {@link ReplayMaskStyle.Blur} (default)
-   * or {@link ReplayMaskStyle.Overlay} (a solid box). Applies to every
-   * `<ReplayMask>`, bulk-occluded text, and whole-screen occlusion. Call any
-   * time after {@link start}.
+   * Set the global mask render style — {@link ReplayMaskStyle.Overlay} (a
+   * solid box, the default), {@link ReplayMaskStyle.Blur} or
+   * {@link ReplayMaskStyle.Pixelate}. Applies to every `<ReplayMask>` and to
+   * bulk-occluded text (`maskAllInputs`, `occludeAllTextFields`,
+   * `occludeAllTextView`). Fields masked automatically (password, card,
+   * one-time code) and whole-screen occlusion are always a solid box. Call
+   * any time after {@link start}.
    */
   setMaskStyle(style: ReplayMaskStyle): void {
     getNative()?.setMaskStyle(style);
@@ -218,7 +232,8 @@ export class ReplayClient {
   // ── Privacy ────────────────────────────────────────────────────
   /** Occlude all text fields in screenshots. */
   occludeAllTextFields(occlude: boolean): void { getNative()?.occludeAllTextFields(occlude); }
-  /** Occlude all multi-line text views in screenshots. */
+  /** Occlude display text in screenshots: every `<Text>` on Android, native
+   *  labels only on iOS (wrap sensitive `<Text>` in `<ReplayMask>` there). */
   occludeAllTextView(occlude: boolean): void { getNative()?.occludeAllTextView(occlude); }
   /** Occlude the entire screen (e.g. a sensitive flow). */
   occludeSensitiveScreen(occlude: boolean): void { getNative()?.occludeSensitiveScreen(occlude); }

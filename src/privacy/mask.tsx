@@ -9,7 +9,9 @@ import ReplayMaskView from '../ReplayMaskViewNativeComponent';
  * Android) that registers itself with the engine's privacy registry on attach
  * and unregisters on detach — the exact mechanism the native iOS/Android SDKs
  * use. The masked region therefore tracks the live view (scroll / layout) and
- * the screenshotter blurs it and overlays diagonal stripes. Nest freely.
+ * the screenshotter masks it in the global mask style (a solid box unless
+ * `setMaskStyle` says otherwise). Taps inside it are recorded without its
+ * text. Nest freely.
  *
  * Declared via codegen ({@link ReplayMaskView}) so it resolves as a Fabric
  * component under the New Architecture; on the old architecture
