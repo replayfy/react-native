@@ -11,10 +11,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Recordings no longer lose frames and events when the app goes to the
   background**, on iOS and Android. Requires the native iOS SDK `Replayfy`
-  0.0.6 or later and bundles the native Android SDK 0.0.5. Uploads now finish
+  0.0.6 or later and bundles the native Android SDK 0.0.6. Uploads now finish
   as the app is backgrounded (an iOS background task; a full drain on
   Android), leftovers go out on return, and a session end that never reached
   the server is resent on the next launch (Android).
+- **Android: no more crash in apps that use Jetpack Compose.** When PixelCopy
+  failed (common on Android 8 and 9) the native SDK drew the view tree on a
+  background thread, and Compose crashed the app on its next frame with
+  `Detected multithreaded access to SnapshotStateObserver`.
 - **`recordScreen: false` is respected after a return.** The native screenshot
   timer used to restart when the app came back to the foreground, when a
   `pauseRecording` was lifted or when the user left an excluded screen, so
