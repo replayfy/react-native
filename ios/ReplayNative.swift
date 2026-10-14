@@ -14,6 +14,13 @@ public final class ReplayNative: NSObject {
 
   @objc public static func requiresMainQueueSetup() -> Bool { false }
 
+  /// Run every call on the main queue, in the order JS made them. React Native
+  /// otherwise calls a module on its own background queue, but the engine's
+  /// session and frame state (start/stop, screen exclusion, pause/resume, the
+  /// capture timer, touch capture) is main-thread only: from another thread a
+  /// stop could invalidate a timer it doesn't own, or race an exclusion.
+  @objc public var methodQueue: DispatchQueue { DispatchQueue.main }
+
   @objc(boot:ingestUrl:configJson:)
   public func boot(_ projectKey: String, ingestUrl: String, configJson: String) {
     // Tag the session as React-Native-captured (dashboard shows "Captured by
