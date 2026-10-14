@@ -29,13 +29,17 @@ do by default.
     `textContentType` `password`, `newPassword`, `oneTimeCode` and
     `creditCardNumber`.
 
-  On Android, `secureTextEntry` together with `keyboardType="phone-pad"` or
-  `"email-address"` is still not detected (React Native gives those fields a
-  non-password input type); wrap them in `<ReplayMask>`.
+  On Android, card and one-time-code fields are detected from Android 8.0
+  (React Native sets no autofill hints below it), and `secureTextEntry`
+  together with `keyboardType="phone-pad"`, `"email-address"`, `"url"` or
+  `"visible-password"` is still not detected (React Native gives those fields
+  a non-password input type); wrap them in `<ReplayMask>`. On iOS, a
+  `textContentType` you set yourself wins over `autoComplete`.
 - **The dashboard's "Always mask input values" setting applies to React
-  Native apps.** It masks every `TextInput` on both platforms from the next
-  session start, and `maskAllInputs: false` doesn't undo it. No code change
-  needed.
+  Native apps.** It masks every `TextInput` in the frames on both platforms
+  from the next session start, and `maskAllInputs: false` doesn't undo it. No
+  code change needed. On iOS it also drops `trackInput` values; on Android it
+  doesn't, so pass `masked: true` there (see `trackInput`).
 - **`occludeSensitiveScreen(true)` covers the frame with one solid box**,
   whatever the mask style. On iOS, taps on that screen are no longer recorded
   either.
@@ -45,16 +49,25 @@ do by default.
 
 ### Fixed
 
+- **`trackInput` values follow the masking.** A value is recorded as `"***"`,
+  whatever `masked` says, while every text field (`maskAllInputs` /
+  `occludeAllTextFields(true)`) or the whole screen
+  (`occludeSensitiveScreen(true)`) is masked, and on Android while the window
+  is `FLAG_SECURE`. Before, the value shipped in plain text unless you passed
+  `masked: true`, even though the frames hid the field.
 - **Taps on masked content no longer record its text.** A tap on a `<Text>`
   inside `<ReplayMask>` (or on a masked field) used that text as the tap's
   label, so up to 50 characters of what the frame hid reached the timeline.
 - The `trackInput` docs said `masked: true` also masks the field in playback.
   It doesn't: it only drops the value. The README now lists exactly which
   fields are masked automatically.
-- The README and the `captureBodies` docs said network request and response
-  bodies are off by default. They are captured by default, clipped at
-  `maxBodyBytes` (4096); the docs now say so. Nothing changed in what is
-  captured: set `network.captureBodies: false` to leave bodies out.
+- The network docs didn't say what is uploaded. Request and response bodies
+  are read on the device by default (clipped at `maxBodyBytes`, 4096), but
+  headers and bodies are uploaded only while the project's **Capture request /
+  response headers** / **bodies** settings are on in the dashboard (both off
+  by default); until then the native engine drops them before upload. The
+  README and the `captureBodies` / `redactHeaders` docs now say so. Nothing
+  changed in what is captured or uploaded.
 
 To update: `npm install @replayfyapp/react-native@0.0.8`, then
 `cd ios && pod update Replayfy --repo-update`, rebuild both apps and ship new

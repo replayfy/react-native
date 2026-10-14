@@ -135,14 +135,18 @@ export class ReplayClient {
    * field's pixels, and this call can't see the field, so it can't tell a
    * sensitive one on its own.
    *
-   * Pixels are masked automatically only for `secureTextEntry` fields,
-   * `autoComplete` cc-number / cc-csc / cc-exp / cc-exp-month / cc-exp-year /
-   * sms-otp (or one-time-code) fields, and anything inside `<ReplayMask>`.
-   * Always pass `masked: true` for those fields. (That `autoComplete` list is
-   * Android's; iOS detects cc-number, one-time-code, current-password and
-   * new-password. On Android a `secureTextEntry` field with
-   * `keyboardType="phone-pad"` or `"email-address"` is not detected: wrap it
-   * in `<ReplayMask>`.)
+   * The value is dropped whatever `masked` says while every text field is
+   * masked (`maskAllInputs` / `occludeAllTextFields(true)`) or the whole
+   * screen is (`occludeSensitiveScreen(true)`); on Android also on a
+   * `FLAG_SECURE` window, and on iOS also while the dashboard's "Always mask
+   * input values" is on. On Android that dashboard setting masks the frames
+   * but not this value.
+   *
+   * So pass `masked: true` for every other field masked in playback:
+   * `secureTextEntry`, card and one-time-code fields (`autoComplete` /
+   * `textContentType`; the README lists the values each platform detects)
+   * and anything inside `<ReplayMask>`. Leave it off only for values that
+   * are fine to record, such as a search query.
    */
   trackInput(label: string, value: string, masked = false): void {
     getNative()?.input(value, masked, label);
@@ -230,12 +234,14 @@ export class ReplayClient {
   }
 
   // ── Privacy ────────────────────────────────────────────────────
-  /** Occlude all text fields in screenshots. */
+  /** Occlude all text fields in screenshots; `trackInput` values are then
+   *  recorded as `"***"`. */
   occludeAllTextFields(occlude: boolean): void { getNative()?.occludeAllTextFields(occlude); }
   /** Occlude display text in screenshots: every `<Text>` on Android, native
    *  labels only on iOS (wrap sensitive `<Text>` in `<ReplayMask>` there). */
   occludeAllTextView(occlude: boolean): void { getNative()?.occludeAllTextView(occlude); }
-  /** Occlude the entire screen (e.g. a sensitive flow). */
+  /** Occlude the entire screen (e.g. a sensitive flow); `trackInput` values
+   *  are then recorded as `"***"`. */
   occludeSensitiveScreen(occlude: boolean): void { getNative()?.occludeSensitiveScreen(occlude); }
 
   // ── GDPR ───────────────────────────────────────────────────────
