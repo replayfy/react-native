@@ -22,6 +22,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Excluded screens and `pauseRecording` hold** across background,
   foreground and session rotation; on Android a screen named with `screen()`
   keeps its name (and its exclusion) when the app returns.
+- **iOS: calls into the native SDK run on the main thread.** React Native
+  called the module on a background queue, while the engine's session and
+  frame state (start, stop, screen exclusion, pause/resume) is main-thread
+  only, so a stop or an exclusion could race the capture timer.
 - **iOS: `pod install` works with `use_frameworks!`.** The pod is now a static
   framework like the `Replayfy` pod it depends on; before, any app whose
   Podfile used frameworks failed with "transitive dependencies that include
