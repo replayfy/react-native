@@ -69,9 +69,11 @@ public final class ReplayNative: NSObject {
 
   @objc(setMaskStyle:)
   public func setMaskStyle(_ style: Int) {
-    // Global default style (blur = 0, overlay = 1) — JS sends the raw index,
-    // we rebuild the Swift enum the engine consumes.
-    Replay.setMaskStyle(ReplayMaskStyle(rawValue: style) ?? .blur)
+    // Global default style (blur = 0, overlay = 1, pixelate = 2) — JS sends
+    // the raw index, we rebuild the Swift enum the engine consumes. An index
+    // we don't know falls back to overlay, the engine's default (a solid
+    // box), never to a weaker style.
+    Replay.setMaskStyle(ReplayMaskStyle(rawValue: style) ?? .overlay)
   }
 
   @objc(recordNetwork:)

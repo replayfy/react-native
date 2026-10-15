@@ -26,7 +26,7 @@ export interface ReplayNativeModule {
   recordNetwork(recordJson: string): void;
   /** Record a text input's value (`masked` → value dropped to `"***"`). */
   input(value: string, masked: boolean, label: string): void;
-  /** Set the global mask render style (blur = 0, overlay = 1). */
+  /** Set the global mask render style (blur = 0, overlay = 1, pixelate = 2). */
   setMaskStyle(style: number): void;
 
   // ── Lifecycle ────────────────────────────────────────────────────

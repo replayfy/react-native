@@ -16,8 +16,9 @@ sessions, product analytics, and error insights in your [Replayfy dashboard](htt
   `captureException` API for handled errors, with full stack traces.
 - **Network & console capture** — every `fetch`/`XHR` request and
   `console.*` line is attached to the session timeline.
-- **Privacy first** — mask any element with `<ReplayMask>`, auto-mask secure
-  inputs, occlude whole screens, and redact sensitive network headers.
+- **Privacy first** — mask any element with `<ReplayMask>`, auto-mask
+  password, card and one-time-code inputs, occlude whole screens, and redact
+  sensitive network headers.
 - **React Navigation aware** — one-line screen tracking for React Navigation.
 - **Native performance** — recording runs on the native iOS/Android engines,
   keeping the JS thread free.
@@ -107,7 +108,7 @@ Pass these to `Replay.start(config)`:
 | `recordConsole` | `boolean` | `true` | Capture `console.*` output. |
 | `recordErrors` | `boolean` | `true` | Capture unhandled JS errors. |
 | `recordPerformance` | `boolean` | `true` | Capture performance vitals. |
-| `maskAllInputs` | `boolean` | `false` | Mask every text input in replay. |
+| `maskAllInputs` | `boolean` | `false` | Mask every text input in replay; `trackInput` values are then recorded as `"***"`. The dashboard's **Always mask input values** setting masks every text input in replay for every session; `false` here doesn't undo it. |
 | `fps` | `number` | `1` | Screen snapshot frames per second. |
 | `wifiOnly` | `boolean` | `false` | Only upload over Wi-Fi. |
 | `debug` | `boolean` | `false` | Verbose SDK logging. |
@@ -117,9 +118,9 @@ Pass these to `Replay.start(config)`:
 
 | Option | Type | Default | Description |
 |---|---|---|---|
-| `captureBodies` | `boolean` | `false` | Capture request/response bodies. |
+| `captureBodies` | `boolean` | `true` | Read request/response bodies on the device (clipped at `maxBodyBytes`). They are uploaded only while the project's **Capture request / response bodies** setting is on (off by default); see [Network redaction](#network-redaction). |
 | `maxBodyBytes` | `number` | `4096` | Truncate captured bodies beyond this length. |
-| `redactHeaders` | `string[] \| boolean` | sensitive denylist | Header names to drop; `true` drops all, `false` keeps all. |
+| `redactHeaders` | `string[] \| boolean` | sensitive denylist | Header names to drop on the device; `true` drops all, `false` keeps all. Headers are uploaded only while the project's **Capture request / response headers** setting is on (off by default). |
 | `ignoreUrls` | `Array<string \| RegExp>` | — | URLs to skip entirely (substring for strings, `.test` for RegExp). |
 
 ## API
@@ -225,12 +226,26 @@ Replay.setExcludedScreens(['PinEntry', 'Billing']);  // replace the whole denyli
 
 Record a text input's value from a `TextInput`'s `onEndEditing`. Pass
 `masked: true` for sensitive fields — the value is dropped (recorded as
-`"***"`) and never leaves the device.
+`"***"`) and never leaves the device. Nothing is recorded for a field unless
+you call this. `masked` only drops the value; it doesn't mask the field in
+playback (see [Privacy & masking](#privacy--masking) for what is masked), and
+the call can't see the field.
+
+The value is dropped whatever `masked` says while every text field is masked
+(`maskAllInputs` or `occludeAllTextFields(true)`) or the whole screen is
+(`occludeSensitiveScreen(true)`); on Android also on a `FLAG_SECURE` window,
+and on iOS also while the dashboard's **Always mask input values** setting is
+on. On Android that dashboard setting masks the frames but not this value.
+
+So pass `masked: true` for every other field that is masked in playback:
+`secureTextEntry`, card and one-time-code fields, and anything inside
+`<ReplayMask>`. Leave it off only for values that are fine to record, such as
+a search query.
 
 ```tsx
 <TextInput
-  placeholder="Email"
-  onEndEditing={(e) => Replay.trackInput('Email', e.nativeEvent.text)}
+  placeholder="Search"
+  onEndEditing={(e) => Replay.trackInput('Search', e.nativeEvent.text)}
 />
 <TextInput
   secureTextEntry
@@ -314,7 +329,50 @@ Replay.log('checkout started', 'info'); // bridge a log line onto the timeline
 
 ## Privacy & masking
 
-Replayfy is built to keep sensitive data off your servers.
+Replayfy is built to keep sensitive data off your servers. Masking happens on
+the device, before a frame is uploaded, and a masked region is painted as a
+solid box by default, so no pixel of it leaves the device.
+
+### Masked automatically
+
+These `TextInput`s are masked with no code beyond the prop, and always as a
+solid box:
+
+| Field | Android | iOS |
+|---|---|---|
+| `secureTextEntry` | Yes (see the note below) | Yes |
+| `autoComplete="cc-number"` | Android 8.0+ | Yes (see the note below) |
+| `autoComplete="one-time-code"` | Android 8.0+ | Yes (see the note below) |
+| `autoComplete="cc-csc"`, `"cc-exp"`, `"cc-exp-month"`, `"cc-exp-year"`, `"sms-otp"` | Android 8.0+ | No |
+| `autoComplete="current-password"`, `"new-password"` | No | Yes (see the note below) |
+| `textContentType="password"`, `"newPassword"`, `"oneTimeCode"`, `"creditCardNumber"` | No (iOS-only prop) | Yes |
+
+So is anything inside `<ReplayMask>` (below). Every other field is recorded as
+it appears on screen. For a card number or a one-time code,
+`autoComplete="cc-number"` and `autoComplete="one-time-code"` are detected on
+both platforms (on Android, React Native passes `one-time-code` on as
+`sms-otp`; on an older React Native that doesn't, use `"sms-otp"` there).
+
+> **Android:** `secureTextEntry` is **not** detected together with
+> `keyboardType="phone-pad"`, `"email-address"`, `"url"` or
+> `"visible-password"`. React Native then gives the field an input type that
+> Android doesn't treat as a password, and Android shows its characters on the
+> device too. Wrap such a field in `<ReplayMask>`. A secure PIN field with
+> `keyboardType="number-pad"` (or `"numeric"` / `"decimal-pad"`) is detected.
+> Card and one-time-code fields are found by their autofill hints, which React
+> Native sets only on Android 8.0 (API 26) and later; on Android 7.x wrap them
+> in `<ReplayMask>`.
+
+> **iOS:** the SDK reads `textContentType`, and React Native fills it in from
+> `autoComplete`. A `textContentType` you set yourself wins, so
+> `autoComplete="one-time-code"` with `textContentType="none"` (or any value
+> not in the table) is **not** detected. On a React Native version that
+> doesn't map `autoComplete` on iOS, set `textContentType` instead.
+
+Taps on masked content are recorded without its text, so a tap can't leak
+what the frame hides.
+
+### Masking more
 
 - **`<ReplayMask>`** — wrap any element to mask it in replay:
 
@@ -326,28 +384,63 @@ Replayfy is built to keep sensitive data off your servers.
   </ReplayMask>;
   ```
 
-- **Automatic input masking** — secure/password inputs are masked
-  automatically. Set `maskAllInputs: true` to mask every input.
+- **Every text input** — set `maskAllInputs: true` in the config, or call
+  `Replay.occludeAllTextFields(true)`, to mask every `TextInput` (single- and
+  multi-line) on both platforms. The dashboard's **Always mask input values**
+  setting does the same for every session of the project, from the next
+  session start, and `maskAllInputs: false` doesn't undo it. (On Android it
+  doesn't reach values recorded with `trackInput`; see there.)
 
-- **Mask style** — choose how masked regions render:
-
-  ```tsx
-  import { ReplayMaskStyle } from '@replayfyapp/react-native';
-
-  Replay.setMaskStyle(ReplayMaskStyle.Blur);    // Blur | Overlay | Pixelate
-  ```
-
-- **Screen occlusion** — hide fields or entire sensitive flows from replay:
+- **Screen occlusion** — hide text or entire sensitive flows from replay:
 
   ```tsx
-  Replay.occludeAllTextFields(true);
-  Replay.occludeAllTextView(true);
-  Replay.occludeSensitiveScreen(true);
+  Replay.occludeAllTextFields(true);   // every text input
+  Replay.occludeAllTextView(true);     // native text labels (see below)
+  Replay.occludeSensitiveScreen(true); // the whole frame, as one solid box
   ```
 
-- **Network redaction** — drop sensitive headers or skip URLs entirely via
-  `config.network.redactHeaders` and `config.network.ignoreUrls`; request and
-  response bodies are off by default.
+  `occludeAllTextView` masks every `<Text>` on Android. On iOS it masks native
+  labels only, and React Native draws `<Text>` without one, so wrap sensitive
+  `<Text>` in `<ReplayMask>`. On iOS, taps on a screen hidden with
+  `occludeSensitiveScreen(true)` are not recorded either.
+
+- **Android `FLAG_SECURE`** — a screen whose window sets `FLAG_SECURE` is
+  recorded as a black frame; its pixels are never copied. An app that sets it
+  on its main window records black frames throughout.
+
+- **Typed values** — `trackInput` records nothing unless you call it. Its
+  value is dropped while every text field or the whole screen is masked; for
+  any other field that is masked in playback, pass `masked: true` (see
+  [`trackInput`](#trackinputlabel-value-masked)).
+
+### Mask style
+
+Masked regions are a solid box (`ReplayMaskStyle.Overlay`) by default. You can
+blur or pixelate `<ReplayMask>` content and bulk-masked text instead:
+
+```tsx
+import { ReplayMaskStyle } from '@replayfyapp/react-native';
+
+Replay.setMaskStyle(ReplayMaskStyle.Blur);    // Overlay (default) | Blur | Pixelate
+```
+
+The fields masked automatically, `occludeSensitiveScreen` and `FLAG_SECURE`
+frames stay solid whatever the style: a blur can still show how long a
+password is.
+
+### Network redaction
+
+Network calls are recorded with their URL, method, status and timing (while
+the project's **Capture network requests** setting is on, the default).
+Headers and bodies are uploaded only while the project's **Capture request /
+response headers** and **Capture request / response bodies** settings are on in
+the dashboard; both are off by default, and until then the native engine drops
+them on the device before upload.
+
+On the device, `Cookie`, `Set-Cookie`, `Authorization` and `X-API-Key` are
+dropped by default (`config.network.redactHeaders`), and bodies are read and
+clipped at `maxBodyBytes`. Set `config.network.captureBodies: false` to never
+read bodies, or skip URLs entirely with `config.network.ignoreUrls`.
 
 ## Links
 

@@ -5,6 +5,7 @@
  *
  *  - `Blur`     — the underlying pixels are blurred.
  *  - `Overlay`  — a solid box is painted over the region (no pixel survives).
+ *                 The default.
  *  - `Pixelate` — the region is reduced to coarse mosaic blocks.
  */
 export enum ReplayMaskStyle {
@@ -15,12 +16,17 @@ export enum ReplayMaskStyle {
 
 /** Options for the JS-side network observer. */
 export interface NetworkCaptureOptions {
-  /** Capture request/response bodies (off by default — PII risk). */
+  /** Read request/response bodies on the device. Default true (clipped at
+   *  `maxBodyBytes`). They are uploaded only while the project's "Capture
+   *  request / response bodies" dashboard setting is on (off by default);
+   *  set false, or use `ignoreUrls`, to never read them. */
   captureBodies?: boolean;
   /** Truncate captured bodies beyond this many chars. Default 4096. */
   maxBodyBytes?: number;
-  /** Header names to drop, `true` to drop all, `false` to keep all.
-   *  Defaults to a sensitive-header denylist. */
+  /** Header names to drop on the device, `true` to drop all, `false` to keep
+   *  all. Defaults to a sensitive-header denylist. Headers are uploaded only
+   *  while the project's "Capture request / response headers" dashboard
+   *  setting is on (off by default). */
   redactHeaders?: string[] | boolean;
   /** URLs to skip entirely (substring match for strings, `.test` for RegExp). */
   ignoreUrls?: Array<string | RegExp>;
@@ -46,7 +52,11 @@ export interface ReplayConfig {
   /** Capture native performance vitals. Default true. */
   recordPerformance?: boolean;
 
-  /** Auto-mask all text inputs (native). Default false. */
+  /** Auto-mask all text inputs (native). Default false. While on,
+   *  `trackInput` values are recorded as `"***"`. Password, card and
+   *  one-time-code fields are masked either way, and the dashboard's "Always
+   *  mask input values" masks every input in the frames for every session
+   *  (false here doesn't undo it). */
   maskAllInputs?: boolean;
   /** Snapshot frames per second (native). Default 1. */
   fps?: number;

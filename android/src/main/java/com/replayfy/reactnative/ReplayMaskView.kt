@@ -9,8 +9,8 @@ import com.replayfy.android.Replay
  *
  * Registers itself with the engine's privacy registry on attach and
  * unregisters on detach (the exact mechanism the native iOS/Android SDKs use),
- * so the masked region tracks the live view and the capture pipeline blurs it
- * and overlays diagonal stripes.
+ * so the masked region tracks the live view and the capture pipeline masks it
+ * in the global mask style (a solid box unless `setMaskStyle` says otherwise).
  *
  * The arch-specific ViewManager lives in `src/newarch` (Fabric: implements the
  * codegen-generated delegate so it registers as a real Fabric component) and

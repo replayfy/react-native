@@ -1,6 +1,7 @@
 package com.replayfy.reactnative
 
 import android.app.Application
+import android.view.WindowManager
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContextBaseJavaModule
@@ -38,7 +39,7 @@ class ReplayNativeModule(private val reactContext: ReactApplicationContext) :
       ReplayConfig(apiKey = projectKey, apiHost = ingestUrl, captureSnapshotPixels = recordScreen),
     )
     if (cfg.optBoolean("maskAllInputs", false)) {
-      Replay.occludeAllTextFields(true)
+      occludeAllTextFields(true)
     }
   }
 
@@ -59,7 +60,13 @@ class ReplayNativeModule(private val reactContext: ReactApplicationContext) :
 
   @ReactMethod
   fun input(value: String, masked: Boolean, label: String) {
-    Replay.trackInput(label, value, masked)
+    // A field masked in the frames never ships its text. The engine's
+    // trackInput only honours `masked`, so add what this bridge can see:
+    // every text field masked, the whole screen occluded, or a FLAG_SECURE
+    // window (recorded as a black frame). The dashboard's "always mask input
+    // values" isn't visible from here.
+    val hide = masked || textFieldsOccluded || screenOccluded || secureWindow()
+    Replay.trackInput(label, value, hide)
   }
 
   @ReactMethod
@@ -69,8 +76,11 @@ class ReplayNativeModule(private val reactContext: ReactApplicationContext) :
 
   @ReactMethod
   fun setMaskStyle(style: Int) {
-    // Global default style (blur = 0, overlay = 1) — JS sends the raw index.
-    Replay.setMaskStyle(com.replayfy.android.ReplayMaskStyle.from(style))
+    // Global default style (blur = 0, overlay = 1, pixelate = 2) — JS sends
+    // the raw index. An index we don't know falls back to overlay, the
+    // engine's default (a solid box), never to a weaker style.
+    val known = com.replayfy.android.ReplayMaskStyle.values().firstOrNull { it.raw == style }
+    Replay.setMaskStyle(known ?: com.replayfy.android.ReplayMaskStyle.OVERLAY)
   }
 
   @ReactMethod
@@ -123,9 +133,15 @@ class ReplayNativeModule(private val reactContext: ReactApplicationContext) :
   }
 
   // ── Privacy ──
-  @ReactMethod fun occludeAllTextFields(occlude: Boolean) { Replay.occludeAllTextFields(occlude) }
+  @ReactMethod fun occludeAllTextFields(occlude: Boolean) {
+    textFieldsOccluded = occlude
+    Replay.occludeAllTextFields(occlude)
+  }
   @ReactMethod fun occludeAllTextView(occlude: Boolean) { Replay.occludeAllTextView(occlude) }
-  @ReactMethod fun occludeSensitiveScreen(occlude: Boolean) { Replay.occludeSensitiveScreen(occlude) }
+  @ReactMethod fun occludeSensitiveScreen(occlude: Boolean) {
+    screenOccluded = occlude
+    Replay.occludeSensitiveScreen(occlude)
+  }
 
   // ── GDPR ──
   @ReactMethod fun optOut(optedOut: Boolean) { Replay.optOutOverall(optedOut) }
@@ -145,6 +161,12 @@ class ReplayNativeModule(private val reactContext: ReactApplicationContext) :
   @ReactMethod fun urlForCurrentSession(promise: Promise) { promise.resolve(Replay.urlForCurrentSession() ?: "") }
   @ReactMethod fun urlForCurrentUser(promise: Promise) { promise.resolve(Replay.urlForCurrentUser() ?: "") }
 
+  /** Whether the current Activity's window is FLAG_SECURE. */
+  private fun secureWindow(): Boolean {
+    val flags = reactContext.currentActivity?.window?.attributes?.flags ?: 0
+    return (flags and WindowManager.LayoutParams.FLAG_SECURE) != 0
+  }
+
   private fun parseProps(json: String?): Map<String, Any?>? {
     if (json.isNullOrBlank()) return null
     return try {
@@ -155,5 +177,13 @@ class ReplayNativeModule(private val reactContext: ReactApplicationContext) :
     } catch (_: Throwable) {
       null
     }
+  }
+
+  private companion object {
+    // The privacy switches last set through this bridge, for input(). Kept
+    // process-wide like the engine's own: a JS reload builds a new module but
+    // leaves the engine's switches as they were.
+    @Volatile var textFieldsOccluded = false
+    @Volatile var screenOccluded = false
   }
 }
